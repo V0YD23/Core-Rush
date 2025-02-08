@@ -8,6 +8,7 @@ import { contractABI } from "../abi/core.js";
 import StakeInterface from "../components/stakeInterface";
 const STAKING_CONTRACT_ABI = contractABI;
 const STAKING_CONTRACT_ADDRESS = "0x74963eD02E9471bd156FB565A095D4172E861a07";
+import { Loader2, Wallet, ArrowDownCircle, ArrowUpCircle, AlertCircle } from "lucide-react";
 
 interface WalletConnectProps {
   provider: BrowserProvider | undefined;
@@ -142,15 +143,16 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       setError("Please enter your expected score first");
       return;
     }
-
+    console.log("Expected Score :",expectedScore)
     try {
       setIsLoading(true);
       setError("");
 
-      const tx = await contract.stake({
-        value: BigInt(stakeAmount),
+      const tx = await contract.stake(expectedScore, {
+        value: BigInt(stakeAmount), // Convert stakeAmount to BigInt for correct handling
       });
       await tx.wait();
+      
 
       await fetchStakedBalance(contract, address);
       setStakeAmount("");
@@ -172,17 +174,18 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     try {
       setIsLoading(true);
       setError("");
-
+      const targetScore = await contract.getTargetSet(address); // Fetch the target score
       const response = await fetch("https://localhost:8443/generate-proof", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ finalScore: Number(withdrawAmount) }),
+        body: JSON.stringify({ finalScore: Number(withdrawAmount),target:targetScore }),
       });
 
       if (!response.ok) throw new Error("Failed to fetch proof");
       
       const { calldata } = await response.json();
       const [a, b, c, input] = calldata;
+
       
       const tx = await contract.withdraw(a, b, c, input);
       await tx.wait();
@@ -197,95 +200,101 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   };
 
   return (
-    <>
+    <div className="w-full max-w-md mx-auto space-y-6 animate-fadeIn">
       {!address ? (
-        <StakeInterface connectWallet={connectWallet} isLoading={isLoading}/>
+        <StakeInterface connectWallet={connectWallet} isLoading={isLoading} />
       ) : (
-        <>
-          <div className="mb-4">
-            <p className="text-sm">
-              Connected Address:
-              <span className="text-green-400 ml-2">
-                {address.substring(0, 6)}...{address.substring(address.length - 4)}
-              </span>
+        <div className="space-y-6">
+          {/* Connected Address Card */}
+          <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 backdrop-blur-sm rounded-xl p-4 border border-blue-500/20 shadow-lg">
+            <div className="flex items-center gap-3">
+              <Wallet className="w-5 h-5 text-blue-400" />
+              <div className="text-sm font-medium text-gray-300">
+                Connected: 
+                <span className="ml-2 text-blue-400">
+                  {address.substring(0, 6)}...{address.substring(address.length - 4)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Staked Balance Card */}
+          <div className="bg-gradient-to-r from-emerald-900/40 to-blue-900/40 rounded-xl p-6 border border-emerald-500/20 shadow-lg">
+            <p className="text-sm text-gray-400 mb-2">Total Staked Balance</p>
+            <p className="text-2xl font-bold text-emerald-400">
+              {stakedBalance} ETH
             </p>
           </div>
 
-          <div className="mb-4 bg-gray-700 p-4 rounded-lg">
-            <p className="text-lg">
-              Your Staked Balance:
-              <span className="font-bold text-green-400 ml-2">
-                {stakedBalance} ETH
-              </span>
-            </p>
-          </div>
+          {/* Staking Section */}
+          <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700 shadow-lg space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Expected Score</label>
+              <input
+                type="number"
+                value={expectedScore}
+                onChange={(e) => setExpectedScore(e.target.value)}
+                placeholder="Enter score (0-100)"
+                className="w-full px-4 py-2 bg-gray-700/60 rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                min="0"
+                max="100"
+              />
+            </div>
 
-          <div className="mb-4">
-            <label className="block mb-2">Expected Score (0-100)</label>
-            <input
-              type="number"
-              value={expectedScore}
-              onChange={(e) => setExpectedScore(e.target.value)}
-              placeholder="Enter your expected score"
-              className="w-full px-3 py-2 bg-gray-700 rounded-lg mb-4"
-              min="0"
-              max="100"
-              step="1"
-            />
-
-            <label className="block mb-2">Stake ETH</label>
-            <div className="flex flex-col gap-2">
-              <div className="flex">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Stake Amount</label>
+              <div className="flex gap-2">
                 <input
                   type="number"
                   value={stakeAmount}
                   onChange={(e) => setStakeAmount(e.target.value)}
-                  placeholder="Enter amount to stake"
-                  className="w-full px-3 py-2 bg-gray-700 rounded-l-lg"
+                  placeholder="Amount in ETH"
+                  className="flex-1 px-4 py-2 bg-gray-700/60 rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   min="0"
                   step="0.01"
                 />
                 <button
                   onClick={handleStake}
-                  disabled={
-                    isLoading || 
-                    !stakeAmount || 
-                    Number(stakeAmount) <= 0 || 
-                    !expectedScore || 
-                    Number(expectedScore) <= 0 || 
-                    Number(expectedScore) > 100
-                  }
-                  className="bg-green-600 px-4 py-2 rounded-r-lg hover:bg-green-700 disabled:opacity-50"
+                  disabled={isLoading || !stakeAmount || Number(stakeAmount) <= 0 || !expectedScore}
+                  className="px-6 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg font-medium shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
                 >
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowUpCircle className="w-4 h-4" />}
                   Stake
                 </button>
               </div>
-              
-              {isCalculatingProfit ? (
-                <div className="text-sm text-gray-400">Calculating estimated profit...</div>
-              ) : estimatedProfit !== null && Number(stakeAmount) > 0 && Number(expectedScore) > 0 ? (
-                <div className="bg-gray-800 p-3 rounded-lg">
-                  <p className="text-sm text-gray-300">Estimated Profit:</p>
-                  <p className="text-lg text-green-400 font-bold">
-                    {estimatedProfit.toFixed(4)} ETH
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Based on expected score of {expectedScore} and current market conditions
-                  </p>
-                </div>
-              ) : null}
             </div>
+
+            {/* Estimated Profit Display */}
+            {isCalculatingProfit ? (
+              <div className="animate-pulse bg-gray-700/40 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                  <p className="text-sm text-gray-400">Calculating profit...</p>
+                </div>
+              </div>
+            ) : estimatedProfit !== null && Number(stakeAmount) > 0 ? (
+              <div className="bg-gray-700/40 rounded-lg p-4 border border-gray-600">
+                <p className="text-sm text-gray-400 mb-1">Estimated Profit</p>
+                <p className="text-xl font-bold text-emerald-400">
+                  {estimatedProfit.toFixed(4)} ETH
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Based on score of {expectedScore} and current market conditions
+                </p>
+              </div>
+            ) : null}
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-2">Withdraw ETH</label>
-            <div className="flex">
+          {/* Withdraw Section */}
+          <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700 shadow-lg space-y-4">
+            <label className="text-sm font-medium text-gray-300">Withdraw Amount</label>
+            <div className="flex gap-2">
               <input
                 type="number"
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
-                placeholder="Enter amount to withdraw"
-                className="w-full px-3 py-2 bg-gray-700 rounded-l-lg"
+                placeholder="Amount in ETH"
+                className="flex-1 px-4 py-2 bg-gray-700/60 rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 min="0"
                 step="0.01"
                 max={stakedBalance}
@@ -293,21 +302,24 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
               <button
                 onClick={handleWithdraw}
                 disabled={isLoading || !withdrawAmount || Number(withdrawAmount) <= 0}
-                className="bg-red-600 px-4 py-2 rounded-r-lg hover:bg-red-700 disabled:opacity-50"
+                className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 rounded-lg font-medium shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
               >
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowDownCircle className="w-4 h-4" />}
                 Withdraw
               </button>
             </div>
           </div>
 
+          {/* Error Display */}
           {error && (
-            <div className="bg-red-600 text-white p-3 rounded-lg mb-4">
-              {error}
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-center gap-3 animate-slideIn">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
-        </>
+        </div>
       )}
-    </>
+    </div>
   );
 };
 
