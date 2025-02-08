@@ -8,8 +8,8 @@ import { contractABI } from "../abi/core.js";
 import StakeInterface from "../components/stakeInterface";
 const STAKING_CONTRACT_ABI = contractABI;
 const STAKING_CONTRACT_ADDRESS = "0x74963eD02E9471bd156FB565A095D4172E861a07";
-import { Loader2, Wallet, ArrowDownCircle, ArrowUpCircle, AlertCircle } from "lucide-react";
-
+import { Loader2, Wallet, Gamepad,ArrowDownCircle, ArrowUpCircle, AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 interface WalletConnectProps {
   provider: BrowserProvider | undefined;
   setProvider: React.Dispatch<React.SetStateAction<BrowserProvider | undefined>>;
@@ -47,7 +47,9 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   const [estimatedProfit, setEstimatedProfit] = useState<number | null>(null);
   const [isCalculatingProfit, setIsCalculatingProfit] = useState(false);
   const [expectedScore, setExpectedScore] = useState("");
+  const [isStaked, setIsStaked] = useState(true);
 
+  const router = useRouter()
   // Effect to calculate profit when stake amount or score changes
   useEffect(() => {
     if (stakeAmount && Number(stakeAmount) > 0 && expectedScore && Number(expectedScore) > 0) {
@@ -152,7 +154,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         value: BigInt(stakeAmount), // Convert stakeAmount to BigInt for correct handling
       });
       await tx.wait();
-      
+      // After successful staking:
+      setIsStaked(true);
 
       await fetchStakedBalance(contract, address);
       setStakeAmount("");
@@ -198,7 +201,10 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       setIsLoading(false);
     }
   };
-
+  // Function to handle game navigation
+  const handlePlayGame = () => {
+    router.push('/game/First%20Game.html'); // Replace with your actual game route
+  };
   return (
     <div className="w-full max-w-md mx-auto space-y-6 animate-fadeIn">
       {!address ? (
@@ -284,7 +290,20 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
               </div>
             ) : null}
           </div>
-
+          {isStaked && (
+            <div className="mt-4">
+              <button
+                onClick={handlePlayGame}
+                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 rounded-lg font-medium shadow-lg shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2 text-white"
+              >
+                <Gamepad className="w-5 h-5" />
+                Play Game
+              </button>
+              <p className="text-xs text-gray-400 text-center mt-2">
+                Your stake has been confirmed. You can now play the game!
+              </p>
+            </div>
+          )}
           {/* Withdraw Section */}
           <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700 shadow-lg space-y-4">
             <label className="text-sm font-medium text-gray-300">Withdraw Amount</label>
