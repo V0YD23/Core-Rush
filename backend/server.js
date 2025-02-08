@@ -5,9 +5,11 @@ const path = require("path");
 const cors = require("cors"); // Import cors
 const snarkjs = require("snarkjs");
 const crypto = require('crypto')
+require("dotenv").config();
 
 const app = express();
 const PORT = 8443;
+const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY; // Store API key securely
 
 // SSL Certificates
 const options = {
@@ -55,6 +57,26 @@ app.post("/api/message", (req, res) => {
   res.status(200).json({ message: "Data received successfully", receivedScore: score });
 });
 
+app.get("/get-core-price", async (req, res) => {
+  try {
+    const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=CORE`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "X-CMC_PRO_API_KEY":COINMARKETCAP_API_KEY,
+      },
+    });
+
+    const data = await response.json();
+    if (data && data.data && data.data.CORE) {
+      res.json({ price: data.data.CORE.quote.USD.price });
+    } else {
+      res.status(400).json({ error: "Invalid API response" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch price" });
+  }
+});
 
 app.post("/generate-proof", async (req, res) => {
   try {

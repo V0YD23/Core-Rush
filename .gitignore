@@ -7,3 +7,5 @@ backend/proof.json
 backend/verifier.sol
 frontend/app/stake
 backend/circomlib
+backend/.env
+frontend/.env
