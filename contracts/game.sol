@@ -35,11 +35,9 @@ contract Staking {
         uint256[2] calldata a,
         uint256[2][2] calldata b,
         uint256[2] calldata c,
-        uint256[1] calldata input,
-        uint256 score
+        uint256[1] calldata input
     ) external {
 
-        require(score >= target[msg.sender], "You have not reached target");
         uint256 balance = stakedAmount[msg.sender];
         require(balance > 0, "No staked balance to withdraw");
         require(address(this).balance >= balance, "Contract has insufficient balance");
@@ -70,6 +68,10 @@ contract Staking {
 
     function getStakedBalance(address user) external view returns (uint256) {
         return stakedAmount[user];
+    }
+
+    function getTargetSet(address user) external view returns (uint256) {
+        return target[user];
     }
 
     function getContractBalance() external view returns (uint256) {

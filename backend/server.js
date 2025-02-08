@@ -6,10 +6,13 @@ const cors = require("cors"); // Import cors
 const snarkjs = require("snarkjs");
 const crypto = require('crypto')
 require("dotenv").config();
-
+const connectDB = require('./database/conn')
 const app = express();
 const PORT = 8443;
+const User = require('./database/models/user')
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY; // Store API key securely
+// Connect to MongoDB Atlas
+connectDB();
 
 // SSL Certificates
 const options = {
@@ -78,6 +81,59 @@ app.get("/get-core-price", async (req, res) => {
   }
 });
 
+app.post("/create-user", async (req, res) => {
+  const { publicKey } = req.body; // User will send publicKey
+  console.log(publicKey)
+  try {
+    if (!publicKey) {
+      return res.status(400).json({ error: "Public key is required!" });
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({ username: publicKey });
+    if (user) {
+      return res.status(200).json({ message: "User already exists!" });
+    }
+    
+
+    // Create new user
+    user = new User({ username: publicKey });
+    await user.save();
+
+    res.status(201).json({ message: "User created successfully!", user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/game-end", async (req, res) => {
+  try {
+    const { score, won, publicKey } = req.body;
+
+    let user = await User.findOne({ username: publicKey });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+
+    // user.score += numericScore;
+    
+    if (won) {
+      user.games_won += 1;
+    } else {
+      user.games_lost += 1;
+    }
+
+
+    await user.save();
+    res.status(200).json({ message: "Updated the LeaderBoard Data" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 app.post("/generate-proof", async (req, res) => {
   try {
       const { finalScore } = req.body;
@@ -88,8 +144,8 @@ app.post("/generate-proof", async (req, res) => {
       }
 
       // Load the WebAssembly and witness calculator
-      const wasmPath = "./game_js/game.wasm";
-      const zkeyPath = "./game.zkey";
+      const wasmPath = "build/game_js/game.wasm";
+      const zkeyPath = "build/game.zkey";
       const input = { finalScore };
 
       // Generate witness

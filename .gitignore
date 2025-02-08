@@ -9,3 +9,4 @@ frontend/app/stake
 backend/circomlib
 backend/.env
 frontend/.env
+backend/build

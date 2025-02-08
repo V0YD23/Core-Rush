@@ -7,7 +7,7 @@ import { Contract } from "ethers";
 import { contractABI } from "../abi/core.js";
 import StakeInterface from "../components/stakeInterface";
 const STAKING_CONTRACT_ABI = contractABI;
-const STAKING_CONTRACT_ADDRESS = "0x74963eD02E9471bd156FB565A095D4172E861a07";
+const STAKING_CONTRACT_ADDRESS = "0xbE09856E2C8998f23D3ff608E75989d20Ef1960C";
 import { Loader2, Wallet, Gamepad,ArrowDownCircle, ArrowUpCircle, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 interface WalletConnectProps {
@@ -44,10 +44,10 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   setStakeAmount,
 }) => {
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [estimatedProfit, setEstimatedProfit] = useState<number | null>(null);
+  const [estimatedProfit, setEstimatedProfit] = useState<number>(0);
   const [isCalculatingProfit, setIsCalculatingProfit] = useState(false);
   const [expectedScore, setExpectedScore] = useState("");
-  const [isStaked, setIsStaked] = useState(true);
+  const [isStaked, setIsStaked] = useState(false);
 
   const router = useRouter()
   // Effect to calculate profit when stake amount or score changes
@@ -55,7 +55,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     if (stakeAmount && Number(stakeAmount) > 0 && expectedScore && Number(expectedScore) > 0) {
       estimateProfit(Number(stakeAmount), Number(expectedScore));
     } else {
-      setEstimatedProfit(null);
+      setEstimatedProfit(0);
     }
   }, [stakeAmount, expectedScore]);
 
@@ -88,7 +88,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       }
     } catch (error) {
       console.error("Failed to fetch Core Token price:", error);
-      setEstimatedProfit(null);
+      setEstimatedProfit(0);
     } finally {
       setIsCalculatingProfit(false);
     }
@@ -113,6 +113,14 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         setContract(stakingContract);
 
         await fetchStakedBalance(stakingContract, userAddress);
+
+        const response  = await fetch("https://localhost:8443/create-user",{
+          method:"POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({publicKey:userAddress}),
+        })
+
+        if (!response.ok) throw new Error("Failed to fetch proof");
       } catch (error) {
         setError("Connection failed: " + (error as Error).message);
       } finally {
@@ -159,7 +167,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
       await fetchStakedBalance(contract, address);
       setStakeAmount("");
-      setEstimatedProfit(null);
+      setEstimatedProfit(0);
       setExpectedScore("");
     } catch (error) {
       setError("Staking failed: " + (error as Error).message);
@@ -170,29 +178,49 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
   const handleWithdraw = async () => {
     if (!contract) {
-      setError("Please connect wallet first");
-      return;
+        setError("Please connect wallet first");
+        return;
     }
 
     try {
-      setIsLoading(true);
-      setError("");
-      const targetScore = await contract.getTargetSet(address); // Fetch the target score
-      const response = await fetch("https://localhost:8443/generate-proof", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ finalScore: Number(withdrawAmount),target:targetScore }),
-      });
+        setIsLoading(true);
+        setError("");
 
-      if (!response.ok) throw new Error("Failed to fetch proof");
-      
-      const { calldata } = await response.json();
-      const [a, b, c, input] = calldata;
+        const targetScore = await contract.getTargetSet(address); // Fetch the target score
 
-      
-      const tx = await contract.withdraw(a, b, c, input);
-      await tx.wait();
-      
+        const response = await fetch("https://localhost:8443/generate-proof", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ finalScore: Number(withdrawAmount) }),
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch proof");
+        const { calldata } = await response.json();
+        const [a, b, c, input] = calldata;
+
+
+
+        // 🔹 Now call the withdraw function
+        const tx = await contract.withdraw(a, b, c, input);
+        await tx.wait();
+
+        const wonLastGame = await contract.getLatestGame(address)
+
+        const gameWon = wonLastGame ? 1 : 0;
+        
+        const gameEndResponse = await fetch("https://localhost:8443/game-end", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            score: Number(withdrawAmount),
+            won: gameWon,
+            publicKey: address,
+          }),
+        });
+        
+      if (!gameEndResponse.ok) throw new Error("Failed to fetch proof");
+
+
       await fetchStakedBalance(contract, address);
       setWithdrawAmount("");
     } catch (error) {
