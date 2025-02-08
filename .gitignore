@@ -1,2 +1,9 @@
 backend/node_modules
 frontend/node_modules
+backend/game.zkey
+backend/verification_key.json
+backend/public.json
+backend/proof.json
+backend/verifier.sol
+frontend/app/stake
+backend/circomlib

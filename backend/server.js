@@ -3,6 +3,8 @@ const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors"); // Import cors
+const snarkjs = require("snarkjs");
+const crypto = require('crypto')
 
 const app = express();
 const PORT = 8443;
@@ -14,7 +16,7 @@ const options = {
 };
 
 // Enable CORS for all origins
-app.use(cors());
+app.use(cors('*'));
 
 // Redirect HTTP to HTTPS (optional)
 app.use((req, res, next) => {
@@ -54,10 +56,39 @@ app.post("/api/message", (req, res) => {
 });
 
 
-app.post("/api/gameScore",(req,res)=> {
-  const {finalScore} = req.body
-  
-})
+app.post("/generate-proof", async (req, res) => {
+  try {
+      const { finalScore } = req.body;
+
+      // Ensure score is in the correct format
+      if (typeof finalScore !== "number") {
+          return res.status(400).json({ error: "Invalid finalScore" });
+      }
+
+      // Load the WebAssembly and witness calculator
+      const wasmPath = "./game_js/game.wasm";
+      const zkeyPath = "./game.zkey";
+      const input = { finalScore };
+
+      // Generate witness
+      const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, wasmPath, zkeyPath);
+      const calldata = await snarkjs.groth16.exportSolidityCallData(proof, publicSignals);
+      console.log("Calldata:", calldata);
+      
+      // ✅ Convert the string into an actual JavaScript array
+      const parsedCalldata = JSON.parse(`[${calldata}]`); // Ensures proper formatting
+      
+      // ✅ Now send the structured array to the frontend
+      res.json({ calldata: parsedCalldata });
+      
+      
+      
+  } catch (error) {
+      console.error("Error generating proof:", error);
+      res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 // Create HTTPS server
 https.createServer(options, app).listen(PORT, () => {
