@@ -7,8 +7,8 @@ template GameWinCondition() {
     signal output isWinner;
 
     component isLess = LessThan(16); // 16-bit comparator
-    isLess.in[0] <== finalScore;
-    isLess.in[1] <== 1000;  // Threshold
+    isLess.in[0] <== 1000;
+    isLess.in[1] <== finalScore;  // Threshold
 
     isWinner <== 1 - isLess.out; // Flip the result
 }

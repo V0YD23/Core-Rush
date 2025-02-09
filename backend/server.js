@@ -133,6 +133,38 @@ app.post("/game-end", async (req, res) => {
   }
 });
 
+app.post("/generate-metadata-nft", async (req, res) => {
+  try {
+    const { publicKey, score } = req.body;
+    if (!publicKey || score == null) {
+      return res.status(400).json({ error: "Missing publicKey or score" });
+    }
+
+    let user = await User.findOne({ username: publicKey });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    let level = user.games_lost + user.games_won + 1;
+
+    const metadata = {
+      name: `Game NFT - Level ${level}`,
+      description: `NFT for ${publicKey} for completing level ${level}`,
+      attributes: [
+        { trait_type: "Level", value: level },
+        { trait_type: "Score", value: `${score} coins collected` },
+      ],
+    };
+
+    console.log("Generated Metadata:", metadata); // Debugging
+
+    res.status(200).json({ metadata });
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 app.post("/generate-proof", async (req, res) => {
   try {
