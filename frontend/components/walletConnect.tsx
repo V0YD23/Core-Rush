@@ -8,9 +8,10 @@ import { Contract } from "ethers";
 import { contractABI } from "../abi/core.js";
 import { NFT } from "../abi/nft.js";
 import StakeInterface from "../components/stakeInterface";
+import NFTMintPopup from "../components/nft";
 const STAKING_CONTRACT_ABI = contractABI;
 const STAKING_CONTRACT_ADDRESS = "0xAeE90204B5E530FE6c0B2C0299436E0Be88529f4";
-
+import { Star, Coins, Heart } from "lucide-react";
 const NFT_CONTRACT_ABI = NFT;
 const NFT_CONTRACT_ADDRESS = "0x695eF9bCEb3FEb43A5cDC13E450bf55C8c661BFA";
 import {
@@ -63,6 +64,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   const [expectedScore, setExpectedScore] = useState("");
   const [isStaked, setIsStaked] = useState(false);
   const [nftContract, setNftContract] = useState<Contract>();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [currentLevel, setCurrentLevel] = useState(1);
 
   const router = useRouter();
   // Effect to calculate profit when stake amount or score changes
@@ -78,6 +81,13 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       setEstimatedProfit(0);
     }
   }, [stakeAmount, expectedScore]);
+
+
+  // Example function that might be called when a user completes a level
+  const handleLevelComplete = () => {
+    setCurrentLevel(prev => prev + 1);
+    setIsPopupOpen(true);
+  };
 
   const estimateProfit = async (stakedAmount: number, score: number) => {
     if (stakedAmount <= 0 || score <= 0) return;
@@ -271,6 +281,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
         const tx = await nftContract?.mintLevelNFT(address, 2, hash);
         await tx.wait();
+        handleLevelComplete()
       }
 
       await fetchStakedBalance(contract, address);
@@ -312,159 +323,158 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   return (
     <div className="w-full max-w-md mx-auto space-y-6 animate-fadeIn">
       {!address ? (
-        <StakeInterface connectWallet={connectWallet} isLoading={isLoading} />
+        <div className="bg-white/90 rounded-xl p-8 border-4 border-yellow-400 shadow-xl text-center space-y-4">
+          <Star className="w-16 h-16 text-yellow-400 mx-auto animate-spin" />
+          <h2 className="text-2xl font-bold text-blue-700">Start Your Adventure!</h2>
+          <StakeInterface connectWallet={connectWallet} isLoading={isLoading}/>
+        </div>
       ) : (
         <div className="space-y-6">
           {/* Connected Address Card */}
-          <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 backdrop-blur-sm rounded-xl p-4 border border-blue-500/20 shadow-lg">
+          <div className="bg-white/90 rounded-xl p-4 border-4 border-green-400 shadow-lg">
             <div className="flex items-center gap-3">
-              <Wallet className="w-5 h-5 text-blue-400" />
-              <div className="text-sm font-medium text-gray-300">
-                Connected:
-                <span className="ml-2 text-blue-400">
-                  {address.substring(0, 6)}...
-                  {address.substring(address.length - 4)}
+              <Heart className="w-6 h-6 text-red-500 animate-pulse" />
+              <div className="text-sm font-bold text-blue-700">
+                Player Connected:
+                <span className="ml-2 text-red-500">
+                  {address.substring(0, 6)}...{address.substring(address.length - 4)}
                 </span>
               </div>
             </div>
           </div>
 
           {/* Staked Balance Card */}
-          <div className="bg-gradient-to-r from-emerald-900/40 to-blue-900/40 rounded-xl p-6 border border-emerald-500/20 shadow-lg">
-            <p className="text-sm text-gray-400 mb-2">Total Staked Balance</p>
-            <p className="text-2xl font-bold text-emerald-400">
-              {stakedBalance} ETH
-            </p>
+          <div className="bg-yellow-300 rounded-xl p-6 border-4 border-yellow-500 shadow-lg">
+            <div className="flex items-center gap-3">
+              <Coins className="w-8 h-8 text-yellow-600 animate-bounce" />
+              <div>
+                <p className="text-sm text-yellow-800 font-bold">Coins Collected</p>
+                <p className="text-2xl font-bold text-yellow-900">{stakedBalance} ETH</p>
+              </div>
+            </div>
           </div>
 
           {/* Staking Section */}
-          <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700 shadow-lg space-y-4">
+          <div className="bg-white/90 rounded-xl p-6 border-4 border-blue-400 shadow-lg space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">
-                Expected Score
-              </label>
+              <label className="text-sm font-bold text-blue-700">Expected Score</label>
               <input
                 type="number"
                 value={expectedScore}
                 onChange={(e) => setExpectedScore(e.target.value)}
                 placeholder="Enter score (0-100)"
-                className="w-full px-4 py-2 bg-gray-700/60 rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full px-4 py-3 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-200 transition-all text-blue-700"
                 min="0"
                 max="100"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">
-                Stake Amount
-              </label>
+              <label className="text-sm font-bold text-blue-700">Power Up Amount</label>
               <div className="flex gap-2">
                 <input
                   type="number"
                   value={stakeAmount}
                   onChange={(e) => setStakeAmount(e.target.value)}
                   placeholder="Amount in ETH"
-                  className="flex-1 px-4 py-2 bg-gray-700/60 rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="flex-1 px-4 py-3 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-200 transition-all text-blue-700"
                   min="0"
                   step="0.01"
                 />
                 <button
                   onClick={handleStake}
-                  disabled={
-                    isLoading ||
-                    !stakeAmount ||
-                    Number(stakeAmount) <= 0 ||
-                    !expectedScore
-                  }
-                  className="px-6 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg font-medium shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                  disabled={isLoading || !stakeAmount || Number(stakeAmount) <= 0 || !expectedScore}
+                  className="px-6 py-3 bg-green-500 hover:bg-green-400 rounded-xl font-bold text-white shadow-lg transition-all duration-200 flex items-center gap-2 border-b-4 border-green-700 hover:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed active:border-b-0 transform active:translate-y-1"
                 >
                   {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <ArrowUpCircle className="w-4 h-4" />
+                    <Star className="w-5 h-5" />
                   )}
-                  Stake
+                  Power Up!
                 </button>
               </div>
             </div>
 
             {/* Estimated Profit Display */}
             {isCalculatingProfit ? (
-              <div className="animate-pulse bg-gray-700/40 rounded-lg p-4">
+              <div className="animate-pulse bg-blue-100 rounded-xl p-4">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                  <p className="text-sm text-gray-400">Calculating profit...</p>
+                  <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+                  <p className="text-sm font-bold text-blue-500">Calculating bonus...</p>
                 </div>
               </div>
             ) : estimatedProfit !== null && Number(stakeAmount) > 0 ? (
-              <div className="bg-gray-700/40 rounded-lg p-4 border border-gray-600">
-                <p className="text-sm text-gray-400 mb-1">Estimated Profit</p>
-                <p className="text-xl font-bold text-emerald-400">
-                  {estimatedProfit.toFixed(4)} ETH
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Based on score of {expectedScore} and current market
-                  conditions
+              <div className="bg-green-100 rounded-xl p-4 border-2 border-green-200">
+                <p className="text-sm font-bold text-green-700 mb-1">Bonus Coins</p>
+                <p className="text-xl font-bold text-green-600">{estimatedProfit.toFixed(4)} ETH</p>
+                <p className="text-xs text-green-600 mt-2">
+                  Power level: {expectedScore} points
                 </p>
               </div>
             ) : null}
           </div>
+
           {isStaked && (
             <div className="mt-4">
               <button
                 onClick={handlePlayGame}
-                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 rounded-lg font-medium shadow-lg shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2 text-white"
+                className="w-full px-6 py-4 bg-red-500 hover:bg-red-400 rounded-xl font-bold text-white shadow-lg transition-all duration-200 flex items-center justify-center gap-2 border-b-4 border-red-700 hover:border-red-500 active:border-b-0 transform active:translate-y-1"
               >
-                <Gamepad className="w-5 h-5" />
-                Play Game
+                <Gamepad className="w-6 h-6" />
+                Start Game!
               </button>
-              <p className="text-xs text-gray-400 text-center mt-2">
-                Your stake has been confirmed. You can now play the game!
+              <p className="text-sm font-bold text-green-600 text-center mt-2">
+                Power-up activated! Ready to play! 🎮
               </p>
             </div>
           )}
+
           {/* Withdraw Section */}
-          <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700 shadow-lg space-y-4">
-            <label className="text-sm font-medium text-gray-300">
-              Withdraw Amount
-            </label>
+          <div className="bg-white/90 rounded-xl p-6 border-4 border-red-400 shadow-lg space-y-4">
+            <label className="text-sm font-bold text-blue-700">Collect Coins</label>
             <div className="flex gap-2">
               <input
                 type="number"
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 placeholder="Amount in ETH"
-                className="flex-1 px-4 py-2 bg-gray-700/60 rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="flex-1 px-4 py-3 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-200 transition-all text-blue-700"
                 min="0"
                 step="0.01"
                 max={stakedBalance}
               />
               <button
                 onClick={handleWithdraw}
-                disabled={
-                  isLoading || !withdrawAmount || Number(withdrawAmount) <= 0
-                }
-                className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 rounded-lg font-medium shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                disabled={isLoading || !withdrawAmount || Number(withdrawAmount) <= 0}
+                className="px-6 py-3 bg-yellow-400 hover:bg-yellow-300 rounded-xl font-bold text-yellow-900 shadow-lg transition-all duration-200 flex items-center gap-2 border-b-4 border-yellow-500 hover:border-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed active:border-b-0 transform active:translate-y-1"
               >
                 {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  <ArrowDownCircle className="w-4 h-4" />
+                  <Coins className="w-5 h-5" />
                 )}
-                Withdraw
+                Collect
               </button>
             </div>
           </div>
 
           {/* Error Display */}
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-center gap-3 animate-slideIn">
-              <AlertCircle className="w-5 h-5 text-red-400" />
-              <p className="text-red-400 text-sm">{error}</p>
+            <div className="bg-red-100 border-4 border-red-400 rounded-xl p-4 flex items-center gap-3 animate-slideIn">
+              <AlertCircle className="w-6 h-6 text-red-500" />
+              <p className="text-red-500 text-sm font-bold">{error}</p>
             </div>
           )}
         </div>
       )}
+        {/* NFT Mint Popup */}
+        <NFTMintPopup
+          isOpen={isPopupOpen}
+          onClose={() => setIsPopupOpen(false)}
+          level={currentLevel}
+          autoCloseDelay={5000} // Optional: automatically close after 5 seconds
+        />
     </div>
   );
 };
