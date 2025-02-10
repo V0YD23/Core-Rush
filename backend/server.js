@@ -10,6 +10,7 @@ const connectDB = require('./database/conn')
 const app = express();
 const PORT = 8443;
 const User = require('./database/models/user')
+const Game = require("./database/models/game")
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY; // Store API key securely
 // Connect to MongoDB Atlas
 connectDB();
@@ -51,13 +52,40 @@ app.post("/api/coin-collection", (req, res) => {
 
 app.get("/api/message", (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.json({ message: "Hello, this is a message from your API!" });
+  const {publicKey} = req.body
+  try {
+    if (!publicKey) {
+      return res.status(400).json({ error: "Public key is required!" });
+    }
+    let gameUser = Game.findOne({username:publicKey})
+    res.json({ score: gameUser.score });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+
 });
 
-app.post("/api/message", (req, res) => {
-  const { score } = req.body;
-  console.log("Received Score:", score);
-  res.status(200).json({ message: "Data received successfully", receivedScore: score });
+app.post("/api/message", async (req, res) => {
+  const { score,publicKey } = req.body;
+  try {
+    if (!publicKey) {
+      return res.status(400).json({ error: "Public key is required!" });
+    }
+    let gameUser = await Game.findOne({username:publicKey})
+    if((score == 1 && gameUser.score == 0) || (score >= 1 && gameUser.score != 0)){
+      console.log(score,gameUser.score)
+      gameUser.score += 1
+    }
+
+    await gameUser.save()
+
+    console.log("Received Score:", score);
+    res.status(200).json({ message: "Data received successfully", receivedScore: score });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+
 });
 
 app.get("/get-core-price", async (req, res) => {
@@ -98,7 +126,9 @@ app.post("/create-user", async (req, res) => {
 
     // Create new user
     user = new User({ username: publicKey });
+    let game = new Game({ username: publicKey});
     await user.save();
+    await game.save();
 
     res.status(201).json({ message: "User created successfully!", user });
   } catch (error) {

@@ -279,7 +279,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
         console.log("IPFS Hash:", hash);
 
-        const tx = await nftContract?.mintLevelNFT(address, 2, hash);
+        const tx = await nftContract?.mintLevelNFT(address, 4, hash);
         await tx.wait();
         handleLevelComplete()
       }
