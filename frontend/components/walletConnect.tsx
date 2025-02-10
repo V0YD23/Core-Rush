@@ -13,7 +13,7 @@ const STAKING_CONTRACT_ABI = contractABI;
 const STAKING_CONTRACT_ADDRESS = "0xAeE90204B5E530FE6c0B2C0299436E0Be88529f4";
 import { Star, Coins, Heart } from "lucide-react";
 const NFT_CONTRACT_ABI = NFT;
-const NFT_CONTRACT_ADDRESS = "0x695eF9bCEb3FEb43A5cDC13E450bf55C8c661BFA";
+const NFT_CONTRACT_ADDRESS = "0x53bfcCf632624edd2028fB8B1BDDA7bf75a661EF";
 import {
   Loader2,
   Wallet,
@@ -303,6 +303,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       if (!gameEndResponse.ok) throw new Error("Failed to fetch proof");
 
       if (gameWon) {
+        console.log("here")
         const response = await fetch(
           "https://localhost:8443/generate-metadata-nft",
           {
@@ -325,15 +326,15 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         if (!hash) throw new Error("Failed to upload metadata to IPFS");
 
         console.log("IPFS Hash:", hash);
-
+        console.log(address)
+        await fetchStakedBalance(contract, address);
+        setgameScore("");
+        setIsStaked(false)
         const tx = await nftContract?.mintLevelNFT(address, 6, hash);
         await tx.wait();
         handleLevelComplete()
       }
 
-      await fetchStakedBalance(contract, address);
-      setgameScore("");
-      setIsStaked(false)
     } catch (error) {
       setError("Withdrawal failed: " + (error as Error).message);
     } finally {

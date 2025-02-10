@@ -43,6 +43,15 @@ app.get("/", (req, res) => {
 
 app.use(express.json()); // Middleware to parse JSON bodies
 
+
+app.get('/api/leaderboard',async (req,res)=>{
+  try {
+    const users = await User.find(); // Fetch all users from MongoDB
+    res.json(users); // Return as an array
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+})
 // Endpoint to handle coin collection data
 app.post("/api/coin-collection", (req, res) => {
   const coinData = req.body;
