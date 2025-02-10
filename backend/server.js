@@ -4,13 +4,13 @@ const fs = require("fs");
 const path = require("path");
 const cors = require("cors"); // Import cors
 const snarkjs = require("snarkjs");
-const crypto = require('crypto')
+const crypto = require("crypto");
 require("dotenv").config();
-const connectDB = require('./database/conn')
+const connectDB = require("./database/conn");
 const app = express();
 const PORT = 8443;
-const User = require('./database/models/user')
-const Game = require("./database/models/game")
+const User = require("./database/models/user");
+const Game = require("./database/models/game");
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY; // Store API key securely
 // Connect to MongoDB Atlas
 connectDB();
@@ -22,7 +22,7 @@ const options = {
 };
 
 // Enable CORS for all origins
-app.use(cors('*'));
+app.use(cors("*"));
 
 // Redirect HTTP to HTTPS (optional)
 app.use((req, res, next) => {
@@ -50,42 +50,52 @@ app.post("/api/coin-collection", (req, res) => {
   res.status(200).send({ message: "Data received successfully" });
 });
 
-app.get("/api/message", (req, res) => {
+app.get("/api/message", async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  const {publicKey} = req.body
+
+  const { publicKey } = req.query; // ✅ Get from query params
+
+  if (!publicKey) {
+    return res.status(400).json({ error: "Public key is required!" });
+  }
+
   try {
-    if (!publicKey) {
-      return res.status(400).json({ error: "Public key is required!" });
+    let gameUser = await Game.findOne({ username: publicKey }); // ✅ Await DB call
+
+    if (!gameUser) {
+      return res.status(404).json({ error: "User not found!" });
     }
-    let gameUser = Game.findOne({username:publicKey})
+
     res.json({ score: gameUser.score });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-
 });
 
 app.post("/api/message", async (req, res) => {
-  const { score,publicKey } = req.body;
+  const { score, publicKey } = req.body;
   try {
     if (!publicKey) {
       return res.status(400).json({ error: "Public key is required!" });
     }
-    let gameUser = await Game.findOne({username:publicKey})
-    if((score == 1 && gameUser.score == 0) || (score >= 1 && gameUser.score != 0)){
-      console.log(score,gameUser.score)
-      gameUser.score += 1
+    let gameUser = await Game.findOne({ username: publicKey });
+    if (
+      (score == 1 && gameUser.score == 0) ||
+      (score >= 1 && gameUser.score != 0)
+    ) {
+      console.log(score, gameUser.score);
+      gameUser.score += 1;
     }
 
-    await gameUser.save()
+    await gameUser.save();
 
     console.log("Received Score:", score);
-    res.status(200).json({ message: "Data received successfully", receivedScore: score });
-
+    res
+      .status(200)
+      .json({ message: "Data received successfully", receivedScore: score });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-
 });
 
 app.get("/get-core-price", async (req, res) => {
@@ -94,7 +104,7 @@ app.get("/get-core-price", async (req, res) => {
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        "X-CMC_PRO_API_KEY":COINMARKETCAP_API_KEY,
+        "X-CMC_PRO_API_KEY": COINMARKETCAP_API_KEY,
       },
     });
 
@@ -111,7 +121,7 @@ app.get("/get-core-price", async (req, res) => {
 
 app.post("/create-user", async (req, res) => {
   const { publicKey } = req.body; // User will send publicKey
-  console.log(publicKey)
+  console.log(publicKey);
   try {
     if (!publicKey) {
       return res.status(400).json({ error: "Public key is required!" });
@@ -122,11 +132,10 @@ app.post("/create-user", async (req, res) => {
     if (user) {
       return res.status(200).json({ message: "User already exists!" });
     }
-    
 
     // Create new user
     user = new User({ username: publicKey });
-    let game = new Game({ username: publicKey});
+    let game = new Game({ username: publicKey });
     await user.save();
     await game.save();
 
@@ -146,15 +155,13 @@ app.post("/game-end", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-
     // user.score += numericScore;
-    
+
     if (won) {
       user.games_won += 1;
     } else {
       user.games_lost += 1;
     }
-
 
     await user.save();
     res.status(200).json({ message: "Updated the LeaderBoard Data" });
@@ -195,40 +202,42 @@ app.post("/generate-metadata-nft", async (req, res) => {
   }
 });
 
-
 app.post("/generate-proof", async (req, res) => {
   try {
-      const { finalScore } = req.body;
+    const { finalScore } = req.body;
 
-      // Ensure score is in the correct format
-      if (typeof finalScore !== "number") {
-          return res.status(400).json({ error: "Invalid finalScore" });
-      }
+    // Ensure score is in the correct format
+    if (typeof finalScore !== "number") {
+      return res.status(400).json({ error: "Invalid finalScore" });
+    }
 
-      // Load the WebAssembly and witness calculator
-      const wasmPath = "build/game_js/game.wasm";
-      const zkeyPath = "build/game.zkey";
-      const input = { finalScore };
+    // Load the WebAssembly and witness calculator
+    const wasmPath = "build/game_js/game.wasm";
+    const zkeyPath = "build/game.zkey";
+    const input = { finalScore };
 
-      // Generate witness
-      const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, wasmPath, zkeyPath);
-      const calldata = await snarkjs.groth16.exportSolidityCallData(proof, publicSignals);
-      console.log("Calldata:", calldata);
-      
-      // ✅ Convert the string into an actual JavaScript array
-      const parsedCalldata = JSON.parse(`[${calldata}]`); // Ensures proper formatting
-      
-      // ✅ Now send the structured array to the frontend
-      res.json({ calldata: parsedCalldata });
-      
-      
-      
+    // Generate witness
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+      input,
+      wasmPath,
+      zkeyPath
+    );
+    const calldata = await snarkjs.groth16.exportSolidityCallData(
+      proof,
+      publicSignals
+    );
+    console.log("Calldata:", calldata);
+
+    // ✅ Convert the string into an actual JavaScript array
+    const parsedCalldata = JSON.parse(`[${calldata}]`); // Ensures proper formatting
+
+    // ✅ Now send the structured array to the frontend
+    res.json({ calldata: parsedCalldata });
   } catch (error) {
-      console.error("Error generating proof:", error);
-      res.status(500).json({ error: "Internal server error" });
+    console.error("Error generating proof:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 // Create HTTPS server
 https.createServer(options, app).listen(PORT, () => {

@@ -127,7 +127,7 @@
 // }
 
 "use client"
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { ethers } from "ethers";
 import { BrowserProvider } from "ethers";
 import { Contract } from "ethers";
@@ -139,10 +139,8 @@ const STAKING_CONTRACT_ABI = contractABI;
 const STAKING_CONTRACT_ADDRESS = "0x50b53ea0ECd8d571570aB6e1230C066E08e9D190";
 
 export default function StakingDapp() {
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState(() => localStorage.getItem("address") || "");
   const [provider, setProvider] = useState<BrowserProvider>();
-  const [contract, setContract] = useState<Contract>();
-  const [stakedBalance, setStakedBalance] = useState("0");
   const [stakeAmount, setStakeAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -165,10 +163,13 @@ export default function StakingDapp() {
       description: "Hit targets for bonus multipliers"
     }
   ];
-
+  useEffect(() => {
+    localStorage.setItem("address", address.toString());
+  }, [address]);
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-400 via-blue-400 to-blue-500 text-white relative overflow-hidden">
-      {/* Cloud Background */}
+    <>
+    {/* // <div className="min-h-screen bg-gradient-to-b from-sky-400 via-blue-400 to-blue-500 text-white relative overflow-hidden"> */}
+      {/* Cloud Background
       <div className="absolute inset-0">
         {[...Array(15)].map((_, i) => (
           <div
@@ -184,7 +185,7 @@ export default function StakingDapp() {
             <div className="w-16 h-16 bg-white rounded-full blur-md opacity-80" />
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Ground Decoration */}
       <div className="absolute bottom-0 w-full h-16 bg-green-500" />
@@ -223,12 +224,8 @@ export default function StakingDapp() {
                 setProvider={setProvider}
                 address={address}
                 setAddress={setAddress}
-                contract={contract}
-                setContract={setContract}
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
-                stakedBalance={stakedBalance}
-                setStakedBalance={setStakedBalance}
                 error={error}
                 setError={setError}
                 stakeAmount={stakeAmount}
@@ -291,6 +288,7 @@ export default function StakingDapp() {
           animation: float 10s infinite;
         }
       `}</style>
-    </div>
+    {/* // </div> */}
+    </>
   );
 }

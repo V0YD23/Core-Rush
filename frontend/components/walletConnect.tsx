@@ -23,6 +23,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { connect } from "http2";
 interface WalletConnectProps {
   provider: BrowserProvider | undefined;
   setProvider: React.Dispatch<
@@ -30,12 +31,8 @@ interface WalletConnectProps {
   >;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
-  contract: Contract | undefined;
-  setContract: React.Dispatch<React.SetStateAction<Contract | undefined>>;
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  stakedBalance: string;
-  setStakedBalance: React.Dispatch<React.SetStateAction<string>>;
   error: string;
   setError: React.Dispatch<React.SetStateAction<string>>;
   stakeAmount: string;
@@ -47,25 +44,23 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   setProvider,
   address,
   setAddress,
-  contract,
-  setContract,
   isLoading,
   setIsLoading,
-  stakedBalance,
-  setStakedBalance,
   error,
   setError,
   stakeAmount,
   setStakeAmount,
 }) => {
-  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [gameScore, setgameScore] = useState(() => localStorage.getItem("gameScore") || "");
   const [estimatedProfit, setEstimatedProfit] = useState<number>(0);
   const [isCalculatingProfit, setIsCalculatingProfit] = useState(false);
-  const [expectedScore, setExpectedScore] = useState("");
-  const [isStaked, setIsStaked] = useState(false);
+  const [expectedScore, setExpectedScore] = useState(() => localStorage.getItem("expectedScore") || "");
+  const [isStaked, setIsStaked] = useState(() => localStorage.getItem("isStaked") === "true");
   const [nftContract, setNftContract] = useState<Contract>();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(1);
+  const [stakedBalance, setStakedBalance] = useState(() => localStorage.getItem("stakedBalance") || "0");
+  const [contract, setContract] = useState<Contract>();
 
   const router = useRouter();
   // Effect to calculate profit when stake amount or score changes
@@ -80,9 +75,60 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     } else {
       setEstimatedProfit(0);
     }
+
+    console.log(isStaked)
   }, [stakeAmount, expectedScore]);
 
+  // 🔹 Load `address` from localStorage on component mount
+  useEffect(() => {
+    const storedAddress = localStorage.getItem("address");
+    if (storedAddress) {
+      setAddress(storedAddress);
+    }
+    connectWallet()
+  }, []);
 
+
+  useEffect(()=>{
+    if (isStaked){
+      fetchGameScore();
+    }
+  },[stakedBalance])
+
+  useEffect(() => {
+    localStorage.setItem("stakedBalance", stakedBalance);
+  }, [stakedBalance]);
+
+  useEffect(() => {
+    localStorage.setItem("isStaked", isStaked.toString());
+  }, [isStaked]);
+
+  useEffect(() => {
+    localStorage.setItem("gameScore", gameScore.toString());
+  }, [gameScore]);
+
+  useEffect(() => {
+    localStorage.setItem("expectedScore", expectedScore.toString());
+  }, [expectedScore]);
+
+  const fetchGameScore = async () => {
+    try {
+      const response = await fetch(`https://localhost:8443/api/message?publicKey=${address}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+  
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+  
+      const data = await response.json();
+      setgameScore(data.score.toString());
+
+      console.log(data)
+    } catch (error) {
+      console.error("Failed to fetch User's Game Score:", error);
+    }
+  };
+  
   // Example function that might be called when a user completes a level
   const handleLevelComplete = () => {
     setCurrentLevel(prev => prev + 1);
@@ -173,6 +219,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     userAddress: string
   ) => {
     try {
+      console.log("fetched")
       const balance = await contractInstance.getStakedBalance(userAddress);
       setStakedBalance(ethers.formatEther(balance));
     } catch (error) {
@@ -228,7 +275,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       const response = await fetch("https://localhost:8443/generate-proof", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ finalScore: Number(withdrawAmount) }),
+        body: JSON.stringify({ finalScore: Number(gameScore) }),
       });
 
       if (!response.ok) throw new Error("Failed to fetch proof");
@@ -247,7 +294,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          score: Number(withdrawAmount),
+          score: Number(gameScore),
           won: gameWon,
           publicKey: address,
         }),
@@ -261,7 +308,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ publicKey: address, score: withdrawAmount }),
+            body: JSON.stringify({ publicKey: address, score: gameScore }),
           }
         );
 
@@ -279,13 +326,14 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
         console.log("IPFS Hash:", hash);
 
-        const tx = await nftContract?.mintLevelNFT(address, 4, hash);
+        const tx = await nftContract?.mintLevelNFT(address, 6, hash);
         await tx.wait();
         handleLevelComplete()
       }
 
       await fetchStakedBalance(contract, address);
-      setWithdrawAmount("");
+      setgameScore("");
+      setIsStaked(false)
     } catch (error) {
       setError("Withdrawal failed: " + (error as Error).message);
     } finally {
@@ -436,8 +484,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
             <div className="flex gap-2">
               <input
                 type="number"
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(e.target.value)}
+                value={gameScore}
+                onChange={(e) => setgameScore(e.target.value)}
                 placeholder="Amount in ETH"
                 className="flex-1 px-4 py-3 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-200 transition-all text-blue-700"
                 min="0"
@@ -446,7 +494,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
               />
               <button
                 onClick={handleWithdraw}
-                disabled={isLoading || !withdrawAmount || Number(withdrawAmount) <= 0}
+                disabled={isLoading || !gameScore || Number(gameScore) <= 0}
                 className="px-6 py-3 bg-yellow-400 hover:bg-yellow-300 rounded-xl font-bold text-yellow-900 shadow-lg transition-all duration-200 flex items-center gap-2 border-b-4 border-yellow-500 hover:border-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed active:border-b-0 transform active:translate-y-1"
               >
                 {isLoading ? (
