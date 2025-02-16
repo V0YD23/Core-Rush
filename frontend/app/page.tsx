@@ -1,17 +1,15 @@
 "use client"
 import React, { useState, useEffect } from "react";
-import { ethers } from "ethers";
 import { BrowserProvider } from "ethers";
-import { Contract } from "ethers";
-import { contractABI } from '../abi/core.js';
 import ConnectWallet from '../components/walletConnect';
 import { Gamepad2, Star, Trophy, Coins, Heart, Target, Crown } from "lucide-react";
 import { useRouter } from "next/navigation";
-const STAKING_CONTRACT_ABI = contractABI;
-const STAKING_CONTRACT_ADDRESS = "0x50b53ea0ECd8d571570aB6e1230C066E08e9D190";
 
 export default function StakingDapp() {
-  const [address, setAddress] = useState(() => localStorage.getItem("address") || "");
+  const [address, setAddress] = useState(() => 
+    (typeof window !== "undefined" && localStorage.getItem("address")) || ""
+  );
+  
   const [provider, setProvider] = useState<BrowserProvider>();
   const [stakeAmount, setStakeAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -190,3 +188,4 @@ export default function StakingDapp() {
     </>
   );
 }
+
