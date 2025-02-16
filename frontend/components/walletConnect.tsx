@@ -406,14 +406,19 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         setgameScore("");
         setIsStaked(false);
 
-        const tx = await nftContract?.mintLevelNFT(address, 8, hash);
+        const resp = await fetch(`https://localhost:8443/current-level?publicKey=${address}`)
+        const temp = await resp.json()
+        const lev = temp.level
+
+
+        const tx = await nftContract?.mintLevelNFT(address, lev, hash);
         await tx.wait();
 
         // Show NFT mint success toast
         toast.custom(
           (t: any) => (
             <div className={`${t.visible ? "animate-enter" : "animate-leave"}`}>
-              <NFTMintSuccessToast level={6} />
+              <NFTMintSuccessToast level={lev} />
             </div>
           ),
           {

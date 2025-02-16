@@ -179,6 +179,28 @@ app.post("/game-end", async (req, res) => {
   }
 });
 
+app.get("/current-level", async (req, res) => {
+  try {
+      const { publicKey } = req.query; // Get publicKey from query
+
+      if (!publicKey) {
+          return res.status(400).json({ error: "publicKey is required" });
+      }
+
+      // Assuming you have a User model
+      const user = await User.findOne({ username : publicKey });
+
+      if (!user) {
+          return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json({ level: user.games_won });
+  } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 app.post("/generate-metadata-nft", async (req, res) => {
   try {
     const { publicKey, score } = req.body;
@@ -191,7 +213,7 @@ app.post("/generate-metadata-nft", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    let level = user.games_lost + user.games_won + 1;
+    let level = user.games_won;
 
     const metadata = {
       name: `Game NFT - Level ${level}`,
