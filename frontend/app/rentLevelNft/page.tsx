@@ -11,8 +11,8 @@ import { GiMagicSwirl } from "react-icons/gi";
 import { motion } from "framer-motion";
 import { toast, Toaster } from 'react-hot-toast';
 
-const NFTcontractAddress = "0x708f59359530fc46bdc18f62C30e9Ee1970c19d0";
-const listNFTcontractAddress = "0x293257b69351bCdB0Dd2918cED459bF4eA5C687e";
+const NFTcontractAddress = "0xb668133744B73e08EA00DC72295F7e8526279b34";
+const listNFTcontractAddress = "0x7a8A1443eEC098Dcd39Ba74a589768ad53021131";
 
 interface NFT {
   tokenId: number;
@@ -129,19 +129,27 @@ export default function AvailableNFTs() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const listNFTContract = new ethers.Contract(listNFTcontractAddress, listNFTcontractABI, signer);
-      
+      const nftContract = new ethers.Contract(NFTcontractAddress,NFT,signer)
       // Calculate total cost
       const pricePerHourWei = ethers.parseEther(selectedNft.pricePerHour);
       const totalCost = pricePerHourWei * BigInt(hoursToRent);
       
       // Call the rentNFT function
+      // Fetch original owner before calling rentNFT
+      const originalOwner = await nftContract.ownerOf(selectedNft.tokenId);
+
       const tx = await listNFTContract.rentNFT(selectedNft.tokenId, hoursToRent, {
         value: totalCost
       });
-      
+
       toast.loading("Confirming transaction...");
       await tx.wait();
-      
+
+      // Call changeHasCompleted with the original owner
+      const change_HasCompleted = await nftContract.changeHasCompleted(originalOwner, selectedNft.tokenId);
+      await change_HasCompleted.wait();
+
+
       toast.dismiss();
       toast.success(`Successfully rented NFT #${selectedNft.tokenId} for ${hoursToRent} hours!`);
       
