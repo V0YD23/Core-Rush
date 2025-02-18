@@ -43,15 +43,14 @@ app.get("/", (req, res) => {
 
 app.use(express.json()); // Middleware to parse JSON bodies
 
-
-app.get('/api/leaderboard',async (req,res)=>{
+app.get("/api/leaderboard", async (req, res) => {
   try {
     const users = await User.find(); // Fetch all users from MongoDB
     res.json(users); // Return as an array
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-})
+});
 // Endpoint to handle coin collection data
 app.post("/api/coin-collection", (req, res) => {
   const coinData = req.body;
@@ -156,7 +155,7 @@ app.post("/create-user", async (req, res) => {
 
 app.post("/game-end", async (req, res) => {
   try {
-    const { score, won, publicKey } = req.body;
+    const { won, publicKey } = req.body;
 
     let user = await User.findOne({ username: publicKey });
 
@@ -168,6 +167,7 @@ app.post("/game-end", async (req, res) => {
 
     if (won) {
       user.games_won += 1;
+      user.level.set(user.games_won.toString(), 1); // Use set() for Maps
     } else {
       user.games_lost += 1;
     }
@@ -179,31 +179,65 @@ app.post("/game-end", async (req, res) => {
   }
 });
 
+// app.post("/transferred-nft", async (req, res) => {
+//   try {
+//     const { publicKey, which_level } = req.body;
+//     if (!publicKey) {
+//       return res.status(400).json({ error: "publicKey is required" });
+//     }
+//     // Assuming you have a User model
+//     const user = await User.findOne({ username: publicKey });
+
+//     if (!user) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
+
+
+
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
 app.get("/current-level", async (req, res) => {
   try {
-      const { publicKey } = req.query; // Get publicKey from query
+    const { publicKey } = req.query; // Get publicKey from query
 
-      if (!publicKey) {
-          return res.status(400).json({ error: "publicKey is required" });
-      }
+    if (!publicKey) {
+      return res.status(400).json({ error: "publicKey is required" });
+    }
 
-      // Assuming you have a User model
-      const user = await User.findOne({ username : publicKey });
+    // Assuming you have a User model
+    const user = await User.findOne({ username: publicKey });
 
-      if (!user) {
-          return res.status(404).json({ error: "User not found" });
-      }
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-      res.json({ level: user.games_won });
+    const levelEntries = Array.from(user.level.entries()); // Convert Map to an array of key-value pairs
+
+    // Find the first level with value 0
+    const firstZeroLevel = levelEntries.find(([key, value]) => value === 0);
+
+    if (firstZeroLevel) {
+      return res.json({ level: Number(firstZeroLevel[0]) });
+    }
+
+    // If no level with 0 value is found, find the highest level and return +1
+    const highestLevel = Math.max(
+      ...levelEntries.map(([key]) => Number(key)),
+      0
+    ); // Ensure a fallback of 0
+    res.json({ level: highestLevel + 1 });
   } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ error: "Internal server error" });
+    console.error("Error fetching user:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 app.post("/generate-metadata-nft", async (req, res) => {
   try {
-    const { publicKey, score } = req.body;
+    const { publicKey, score, level } = req.body;
     if (!publicKey || score == null) {
       return res.status(400).json({ error: "Missing publicKey or score" });
     }
@@ -213,14 +247,14 @@ app.post("/generate-metadata-nft", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    let level = user.games_won;
-
     const metadata = {
       name: `Game NFT - Level ${level}`,
       description: `NFT for ${publicKey} for completing level ${level}`,
+      
       attributes: [
         { trait_type: "Level", value: level },
         { trait_type: "Score", value: `${score} coins collected` },
+        { trait_type: "Owner", value: publicKey },
       ],
     };
 
@@ -274,3 +308,38 @@ app.post("/generate-proof", async (req, res) => {
 https.createServer(options, app).listen(PORT, () => {
   console.log(`Server running at https://localhost:${PORT}`);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
