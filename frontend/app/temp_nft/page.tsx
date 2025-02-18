@@ -1,4 +1,40 @@
-export const NFT = [
+"use client"
+import { useState } from "react";
+import { ethers } from "ethers";
+
+const CONTRACT_ADDRESS = "0x708f59359530fc46bdc18f62C30e9Ee1970c19d0"; // Replace with deployed contract address
+const CONTRACT_ABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "changeHasCompleted",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -106,6 +142,29 @@ export const NFT = [
 		],
 		"name": "ERC721NonexistentToken",
 		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "player",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "level",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "tokenURI",
+				"type": "string"
+			}
+		],
+		"name": "mintLevelNFT",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"inputs": [
@@ -256,6 +315,82 @@ export const NFT = [
 		"type": "event"
 	},
 	{
+		"inputs": [],
+		"name": "renounceOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "safeTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bytes",
+				"name": "data",
+				"type": "bytes"
+			}
+		],
+		"name": "safeTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "setApprovalForAll",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -284,6 +419,11 @@ export const NFT = [
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
 				"name": "to",
 				"type": "address"
 			},
@@ -293,7 +433,20 @@ export const NFT = [
 				"type": "uint256"
 			}
 		],
-		"name": "approve",
+		"name": "transferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -315,24 +468,6 @@ export const NFT = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "originalOwner",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "changeHasCompleted",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -422,29 +557,6 @@ export const NFT = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "level",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "tokenURI",
-				"type": "string"
-			}
-		],
-		"name": "mintLevelNFT",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "name",
 		"outputs": [
@@ -487,82 +599,6 @@ export const NFT = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "renounceOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "safeTransferFrom",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bytes",
-				"name": "data",
-				"type": "bytes"
-			}
-		],
-		"name": "safeTransferFrom",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "operator",
-				"type": "address"
-			},
-			{
-				"internalType": "bool",
-				"name": "approved",
-				"type": "bool"
-			}
-		],
-		"name": "setApprovalForAll",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -647,41 +683,93 @@ export const NFT = [
 		],
 		"stateMutability": "view",
 		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "transferFrom",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
-		"name": "transferOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	}
 ]
+
+
+export default function MintNFT() {
+    const [account, setAccount] = useState<string | null>(null);
+    const [tokenURI, setTokenURI] = useState<string>("");
+    const [level, setLevel] = useState<number | string>(""); // Store level input
+    const [minting, setMinting] = useState<boolean>(false);
+    const [message, setMessage] = useState<string>("");
+
+    // Connect to MetaMask
+    async function connectWallet() {
+        if (window.ethereum) {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            setAccount(await signer.getAddress());
+        } else {
+            alert("MetaMask not detected!");
+        }
+    }
+
+    // Mint NFT Function
+    async function mintNFT() {
+        if (!tokenURI || !level) {
+            alert("Please enter a token URI and level!");
+            return;
+        }
+
+        try {
+            setMinting(true);
+            setMessage("");
+
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+            const tx = await contract.mintLevelNFT(account, level, tokenURI);
+            await tx.wait();
+
+            setMessage(`NFT Minted Successfully! TX Hash: ${tx.hash}`);
+        } catch (error) {
+            setMessage("Error minting NFT: " + (error as Error).message);
+        } finally {
+            setMinting(false);
+        }
+    }
+
+    return (
+        <div className="p-6 bg-gray-100 min-h-screen flex flex-col items-center">
+            <h1 className="text-2xl font-bold mb-4">Mint Your NFT</h1>
+            
+            {!account ? (
+                <button onClick={connectWallet} className="bg-blue-500 text-white px-4 py-2 rounded">
+                    Connect Wallet
+                </button>
+            ) : (
+                <div className="bg-white p-4 shadow-md rounded-lg w-96">
+                    <p className="mb-2">Connected Account: {account}</p>
+                    
+                    <input 
+                        type="number" 
+                        placeholder="Enter Level" 
+                        value={level} 
+                        onChange={(e) => setLevel(e.target.value)}
+                        className="w-full border p-2 mb-3"
+                    />
+
+                    <input 
+                        type="text" 
+                        placeholder="Enter Token URI" 
+                        value={tokenURI} 
+                        onChange={(e) => setTokenURI(e.target.value)}
+                        className="w-full border p-2 mb-3"
+                    />
+                    
+                    <button 
+                        onClick={mintNFT} 
+                        disabled={minting}
+                        className="bg-green-500 text-white px-4 py-2 rounded w-full"
+                    >
+                        {minting ? "Minting..." : "Mint NFT"}
+                    </button>
+                    
+                    {message && <p className="mt-2 text-blue-600">{message}</p>}
+                </div>
+            )}
+        </div>
+    );
+}
