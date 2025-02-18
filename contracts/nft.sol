@@ -8,14 +8,29 @@ contract GameLevelNFT is ERC721URIStorage, Ownable {
     uint256 public tokenCounter;
     // Mapping to track levels completed by each player
     mapping(address => mapping(uint256 => bool)) public hasCompletedLevel;
+    // Mapping from tokenId to level
+    mapping(uint256 => uint256) public tokenLevel;
 
     event NFTminted(address player, uint256 level, uint256 tokenId);
 
-    constructor() ERC721("GameLevel", "GLV") Ownable(msg.sender) {
+    constructor() ERC721("LevelGame", "LVGNFT") Ownable(msg.sender) {
         tokenCounter = 1;
     }
 
+
+
     //mint an NFT
+    function changeHasCompleted(address originalOwner, uint256 tokenId) external {
+        require(originalOwner != address(0), "Invalid owner address");
+
+        uint256 level = tokenLevel[tokenId]; // Get level corresponding to tokenId
+
+        // Reset old owner's completion status
+        hasCompletedLevel[originalOwner][level] = false;
+
+        // Mark new owner's completion status
+        hasCompletedLevel[msg.sender][level] = true;
+    }
 
     function mintLevelNFT(
         address player,
@@ -29,11 +44,13 @@ contract GameLevelNFT is ERC721URIStorage, Ownable {
 
         hasCompletedLevel[player][level] = true;
 
-        //mintNFT
-
         uint256 newTokenId = tokenCounter;
         _mint(player, newTokenId);
+
+        
         _setTokenURI(newTokenId, tokenURI);
+
+        tokenLevel[newTokenId] = level; // Store the level for this tokenId
 
         tokenCounter++;
 
