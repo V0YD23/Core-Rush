@@ -16,6 +16,10 @@ const STAKING_CONTRACT_ADDRESS:string = process.env.NEXT_PUBLIC_STAKING_ADDRESS 
 import { Star, Coins, Heart } from "lucide-react";
 const NFT_CONTRACT_ABI = NFT;
 const NFT_CONTRACT_ADDRESS: string = process.env.NEXT_PUBLIC_NFT_ADDRESS || "";
+import WithdrawSuccessToast from "./withdrawSuccessToast.jsx";
+import { uploadToIPFS } from "@/utils/ipfsUploader.js";
+import NFTMintSuccessToast from "./nftMintSuccessToast.jsx";
+import { WalletConnectProps } from "@/interfaces/walletConnect.js";
 import {
   Loader2,
   Wallet,
@@ -25,21 +29,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { connect } from "http2";
-interface WalletConnectProps {
-  provider: BrowserProvider | undefined;
-  setProvider: React.Dispatch<
-    React.SetStateAction<BrowserProvider | undefined>
-  >;
-  address: string;
-  setAddress: React.Dispatch<React.SetStateAction<string>>;
-  isLoading: boolean;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  error: string;
-  setError: React.Dispatch<React.SetStateAction<string>>;
-  stakeAmount: string;
-  setStakeAmount: React.Dispatch<React.SetStateAction<string>>;
-}
+
+
 
 const WalletConnect: React.FC<WalletConnectProps> = ({
   provider,
@@ -84,36 +75,6 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   const api = process.env.NEXT_PUBLIC_BACKEND_API;
   const router = useRouter();
 
-  // Custom Toast Components
-  const WithdrawSuccessToast = ({ amount }: any) => (
-    <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-green-500/90 to-green-600/90 rounded-xl border-2 border-green-400 shadow-lg backdrop-blur-sm">
-      <div className="flex-shrink-0">
-        <Coins className="w-6 h-6 text-yellow-300 animate-bounce" />
-      </div>
-      <div className="flex-1">
-        <p className="font-bold text-white">Coins Collected!</p>
-        <p className="text-sm text-green-100">
-          {amount} ETH withdrawn successfully
-        </p>
-      </div>
-      <CheckCircle2 className="w-5 h-5 text-green-200 animate-pulse" />
-    </div>
-  );
-
-  const NFTMintSuccessToast = ({ level }: any) => (
-    <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500/90 to-purple-600/90 rounded-xl border-2 border-blue-400 shadow-lg backdrop-blur-sm">
-      <div className="flex-shrink-0">
-        <Trophy className="w-6 h-6 text-yellow-300 animate-float" />
-      </div>
-      <div className="flex-1">
-        <p className="font-bold text-white">NFT Minted!</p>
-        <p className="text-sm text-blue-100">
-          Level {level} achievement unlocked
-        </p>
-      </div>
-      <CheckCircle2 className="w-5 h-5 text-blue-200 animate-pulse" />
-    </div>
-  );
 
   // Effect to calculate profit when stake amount or score changes
   useEffect(() => {
@@ -453,32 +414,6 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       setError("Withdrawal failed: " + (error as Error).message);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const uploadToIPFS = async (metadata: any) => {
-    try {
-      const url = "https://api.pinata.cloud/pinning/pinJSONToIPFS"; // Use pinJSONToIPFS for metadata
-
-      const response = await axios.post(url, metadata, {
-        headers: {
-          "Content-Type": "application/json",
-          pinata_api_key: "30822c42812cd6ea5b8c",
-          pinata_secret_api_key:
-            "efa8ce1324868fbe358863c37069edb9542087a67df7ddaf6b61ca10a232081b",
-        },
-      });
-
-      // Get IPFS hash (CID)
-      const ipfsHash = response.data.IpfsHash;
-      console.log(`✅ Metadata uploaded! IPFS Hash: ${ipfsHash}`);
-      return `ipfs://${ipfsHash}`; // Return IPFS URL
-    } catch (error: any) {
-      console.error(
-        "❌ Error uploading metadata to IPFS:",
-        error.response ? error.response.data : error.message
-      );
-      return null;
     }
   };
 
