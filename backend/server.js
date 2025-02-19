@@ -45,12 +45,27 @@ app.use(express.json()); // Middleware to parse JSON bodies
 
 app.get("/api/leaderboard", async (req, res) => {
   try {
-    const users = await User.find(); // Fetch all users from MongoDB
-    res.json(users); // Return as an array
+    const users = await User.aggregate([
+      {
+        $sort: { createdAt: -1 } // Sort by createdAt (latest first), assuming you have timestamps
+      },
+      {
+        $group: {
+          _id: "$username", // Group by username
+          userData: { $first: "$$ROOT" } // Take the latest entry for each username
+        }
+      },
+      {
+        $replaceRoot: { newRoot: "$userData" } // Flatten the result
+      }
+    ]);
+
+    res.json(users); // Return unique users based on username
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
 // Endpoint to handle coin collection data
 app.post("/api/coin-collection", (req, res) => {
   const coinData = req.body;
