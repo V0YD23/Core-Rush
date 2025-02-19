@@ -183,7 +183,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
   // Example function that might be called when a user completes a level
   const handleLevelComplete = () => {
-    setCurrentLevel((prev) => prev + 1);
+    // setCurrentLevel((prev) => prev + 1);
     setIsPopupOpen(true);
   };
 
@@ -388,10 +388,18 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       );
 
       if (gameWon) {
+
+        const resp = await fetch(`https://localhost:8443/current-level?publicKey=${address}`)
+        const temp = await resp.json()
+        const lev = temp.level
+        console.log("level "+lev)
+        setCurrentLevel(lev)
+
+
         const response = await fetch(`${api}/generate-metadata-nft`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ publicKey: address, score: gameScore }),
+          body: JSON.stringify({ publicKey: address, score: gameScore,level:lev }),
         });
 
         if (!response.ok) throw new Error("Failed to generate metadata");
@@ -406,9 +414,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         setgameScore("");
         setIsStaked(false);
 
-        const resp = await fetch(`https://localhost:8443/current-level?publicKey=${address}`)
-        const temp = await resp.json()
-        const lev = temp.level
+
 
 
         const tx = await nftContract?.mintLevelNFT(address, lev, hash);

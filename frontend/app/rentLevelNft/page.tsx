@@ -35,6 +35,9 @@ export default function AvailableNFTs() {
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+  const api = process.env.NEXT_PUBLIC_BACKEND_API;
+
   useEffect(() => {
     loadAvailableNFTs();
   }, []);
@@ -148,6 +151,15 @@ export default function AvailableNFTs() {
       // Call changeHasCompleted with the original owner
       const change_HasCompleted = await nftContract.changeHasCompleted(originalOwner, selectedNft.tokenId);
       await change_HasCompleted.wait();
+
+      const level = await nftContract.tokenLevel(selectedNft.tokenId);
+      const response = await fetch(`${api}/transferred-nft`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ originalOwner_publicKey : originalOwner,newOwner_publicKey: account,which_level:level }),
+      });
+      if (!response.ok) throw new Error("Failed to fetch proof");
+
 
 
       toast.dismiss();

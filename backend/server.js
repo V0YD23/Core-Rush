@@ -179,25 +179,33 @@ app.post("/game-end", async (req, res) => {
   }
 });
 
-// app.post("/transferred-nft", async (req, res) => {
-//   try {
-//     const { publicKey, which_level } = req.body;
-//     if (!publicKey) {
-//       return res.status(400).json({ error: "publicKey is required" });
-//     }
-//     // Assuming you have a User model
-//     const user = await User.findOne({ username: publicKey });
+app.post("/transferred-nft", async (req, res) => {
+  try {
+    const { originalOwner_publicKey,newOwner_publicKey, which_level } = req.body;
+    if (!originalOwner_publicKey || newOwner_publicKey ) {
+      return res.status(400).json({ error: "publicKey is required" });
+    }
+    // Assuming you have a User model
+    const owner = await User.findOne({ username: originalOwner_publicKey });
+    const renter = await User.findOne({username: newOwner_publicKey})
 
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
+    if (!owner || !renter){
+      return res.status(404).json({ error: "User not found" });
+    }
 
+    owner.level.set(which_level.toString(),0)
+    renter.level.set(which_level.toString(),1)
+    owner.games_won -=1
+    renter.games_won +=1
+    await owner.save()
+    await renter.save()
 
+    res.status(200).json({ message: "Updated the Database" });
 
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.get("/current-level", async (req, res) => {
   try {
