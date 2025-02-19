@@ -8,8 +8,8 @@ import { BrowserProvider, Contract } from "ethers";
 import Image from "next/image";
 import { toast, Toaster } from 'react-hot-toast';
 
-const NFTcontractAddress = "0xb668133744B73e08EA00DC72295F7e8526279b34";
-const listNFTcontractAddress = "0x7a8A1443eEC098Dcd39Ba74a589768ad53021131";
+const NFTcontractAddress:string = process.env.NEXT_PUBLIC_NFT_ADDRESS || "";
+const listNFTcontractAddress:string = process.env.NEXT_PUBLIC_LIST_NFT_ADDRESS || "";
 
 export default function MyNFTs() {
   const [nfts, setNfts] = useState<{ tokenId: number; metadata: any }[]>([]);

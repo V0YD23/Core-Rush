@@ -12,10 +12,10 @@ import StakeInterface from "../components/stakeInterface";
 import NFTMintPopup from "../components/nft";
 import { Trophy, CheckCircle2 } from "lucide-react";
 const STAKING_CONTRACT_ABI = contractABI;
-const STAKING_CONTRACT_ADDRESS = "0xAeE90204B5E530FE6c0B2C0299436E0Be88529f4";
+const STAKING_CONTRACT_ADDRESS:string = process.env.NEXT_PUBLIC_STAKING_ADDRESS || "";;
 import { Star, Coins, Heart } from "lucide-react";
 const NFT_CONTRACT_ABI = NFT;
-const NFT_CONTRACT_ADDRESS = "0xb668133744B73e08EA00DC72295F7e8526279b34";
+const NFT_CONTRACT_ADDRESS: string = process.env.NEXT_PUBLIC_NFT_ADDRESS || "";
 import {
   Loader2,
   Wallet,
