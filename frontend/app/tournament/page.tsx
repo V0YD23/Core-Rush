@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
+import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
@@ -12,7 +13,8 @@ import {
   Zap,
   Waves,
 } from "lucide-react";
-
+import {ethers,BrowserProvider} from "ethers";
+import {Tournament_NFT} from "@/abi/tournament_nft.js"
 const ParticleEffect = () => {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -55,9 +57,13 @@ const scrollToSection = (sectionId: any) => {
     section.scrollIntoView({ behavior: "smooth" });
   }
 };
-
+const tournament_nft = "0xdAf27a5C2F1307f3b5703E63229A2E1346278496"
 const TournamentLanding = () => {
+const api = process.env.NEXT_PUBLIC_BACKEND_API;
   const [hoveredTier, setHoveredTier] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [provider,setProvider] = useState<BrowserProvider>()
+  const [account, setAccount] = useState<string | null>(null);
   const buttonVariants = {
     initial: {
       scale: 1,
@@ -119,6 +125,93 @@ const scrollToSection = (sectionId:any) => {
         behavior: 'smooth',
         block: 'start'
       });
+    }
+  };
+  useEffect(() => {
+    loadAccount();
+  }, []);
+  async function loadAccount(){
+    if (!window.ethereum) {
+        // toast.error("Please install MetaMask to view available NFTs");
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const userAddress = await signer.getAddress();
+        setAccount(userAddress);
+        setProvider(provider)
+
+      } catch (error) {
+        console.error("Error fetching available Account:", error);
+      }   
+  }
+  const ClaimNFT = async() => {
+    const resp = await fetch(`https://localhost:8443/current-level?publicKey=${account}`)
+    const temp = await resp.json()
+    const lev = temp.level
+    console.log("level "+lev)
+    console.log(typeof(lev))
+
+    const response = await fetch(`${api}/generate-tournament-metadata`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicKey: account, latest_cleared_level:lev }),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate metadata");
+      const { metadata } = await response.json();
+      const Type = metadata.attributes[1].value;
+
+      console.log(metadata)
+      console.log(Type)
+
+      if (!metadata) throw new Error("Received null metadata");
+
+      const hash = await uploadToIPFS(metadata);
+      if (!hash) throw new Error("Failed to upload metadata to IPFS");
+
+
+      const signer = await provider?.getSigner();
+      const Tournament_NFT_Contract  = new ethers.Contract(tournament_nft,Tournament_NFT,signer);
+
+
+      const tx = await Tournament_NFT_Contract?.mintTournamentNFT(Type,hash);
+      await tx.wait();
+      console.log("success")
+
+
+
+
+  }
+
+
+
+  const uploadToIPFS = async (metadata: any) => {
+    try {
+      const url = "https://api.pinata.cloud/pinning/pinJSONToIPFS"; // Use pinJSONToIPFS for metadata
+
+      const response = await axios.post(url, metadata, {
+        headers: {
+          "Content-Type": "application/json",
+          pinata_api_key: "30822c42812cd6ea5b8c",
+          pinata_secret_api_key:
+            "efa8ce1324868fbe358863c37069edb9542087a67df7ddaf6b61ca10a232081b",
+        },
+      });
+
+      // Get IPFS hash (CID)
+      const ipfsHash = response.data.IpfsHash;
+      console.log(`✅ Metadata uploaded! IPFS Hash: ${ipfsHash}`);
+      return `ipfs://${ipfsHash}`; // Return IPFS URL
+    } catch (error: any) {
+      console.error(
+        "❌ Error uploading metadata to IPFS:",
+        error.response ? error.response.data : error.message
+      );
+      return null;
     }
   };
   return (
@@ -207,7 +300,7 @@ const scrollToSection = (sectionId:any) => {
                 variants={buttonVariants}
                 initial="initial"
                 whileHover="hover"
-                onClick={() => scrollToSection("tournament")}
+                onClick={() => scrollToSection("destiny")}
                 className="px-8 py-4 bg-transparent rounded-lg text-white font-bold text-lg border border-white/30 backdrop-blur-sm hover:bg-white/10 transition-colors duration-300"
               >
                 Play Tournament
@@ -217,7 +310,8 @@ const scrollToSection = (sectionId:any) => {
                 variants={buttonVariants}
                 initial="initial"
                 whileHover="hover"
-                onClick={() => scrollToSection("destiny")}
+                // onClick={() => scrollToSection("destiny")}
+                onClick={()=> ClaimNFT()}
                 className="px-8 py-4 bg-transparent rounded-lg text-white font-bold text-lg border border-white/30 backdrop-blur-sm hover:bg-white/10 transition-colors duration-300"
               >
                 Claim NFTs
@@ -286,7 +380,7 @@ const scrollToSection = (sectionId:any) => {
                   whileTap={{ scale: 0.95 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
                 >
-                  Claim Your NFT
+                  Play this Tournament
                 </motion.button>
               </motion.div>
             ))}
