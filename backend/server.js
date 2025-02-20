@@ -258,6 +258,48 @@ app.get("/current-level", async (req, res) => {
   }
 });
 
+
+
+app.post("/generate-tournament-metadata",async(req,res)=>{
+  try {
+    const {publicKey,latest_cleared_level} = req.body
+    if (!publicKey || latest_cleared_level == null) {
+      return res.status(400).json({ error: "Missing publicKey or score" });
+    }
+
+    const temp = latest_cleared_level
+    var Type = "";
+
+    if (temp < 10) {
+      Type = "Ocean Warrior"
+    }
+    else if(temp >= 10 && temp < 15){
+      Type = "Storm Bringer"
+    }
+    else if(temp >= 15 && temp < 20){
+      Type = "Azure Legend"
+    }
+
+    const metadata = {
+      name: `BattleKey NFT - Type ${Type}`,
+      description: `NFT for ${publicKey} for completing level ${temp} and becoming elegible for ${Type} Battle`,
+      
+      attributes: [
+        { trait_type: "Level", value: temp },
+        { trait_type: "Type", value: `${Type}` },
+        { trait_type: "Owner", value: publicKey },
+      ],
+    };
+    console.log("Generated Metadata:", metadata); // Debugging
+
+    res.status(200).json({ metadata });
+
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
 app.post("/generate-metadata-nft", async (req, res) => {
   try {
     const { publicKey, score, level } = req.body;
