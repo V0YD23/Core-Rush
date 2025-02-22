@@ -16,5 +16,8 @@
     "express": "^4.21.2",
     "mongoose": "^8.10.0",
     "snarkjs": "^0.7.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
   }
 }
