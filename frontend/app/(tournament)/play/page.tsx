@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Sword, Crown, Coins, ArrowRight, Clock, Wallet } from "lucide-react";
-import { ethers, BrowserProvider } from "ethers";
+import { ethers, BrowserProvider,Contract } from "ethers";
 
 interface Player {
   _id: string;
@@ -17,6 +17,7 @@ export default function TournamentPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isStaked, setIsStaked] = useState(false);
   const [stakeAmount] = useState(0.5);
+  const [contract,setContract] = useState<Contract>()
   const [leaderboardData, setLeaderboardData] = useState<Player[]>([]);
   const [provider, setProvider] = useState<BrowserProvider>();
   const [account, setAccount] = useState(() => 
@@ -36,20 +37,21 @@ export default function TournamentPage() {
   const isUserInLeaderboard = leaderboardData.some(
     (player) => player.username === account
   );
+  
+  const fetchLeaderboard = async () => {
+    try {
+      const response = await fetch(`${api}/api/Ocean/leaderBoard`);
+      const data: Player[] = await response.json();
+      setLeaderboardData(data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadAccount();
-    const fetchLeaderboard = async () => {
-      try {
-        const response = await fetch(`${api}/api/Ocean/leaderBoard`);
-        const data: Player[] = await response.json();
-        setLeaderboardData(data);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        setIsLoading(false);
-      }
-    };
 
     fetchLeaderboard();
   }, []);
@@ -76,6 +78,37 @@ export default function TournamentPage() {
     }
   }
 
+  const handleStake = async () => {
+    if (!account) {
+      console.error("Wallet not connected");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${api}/api/Ocean/Stake`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ publicKey: account }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to stake");
+      }
+  
+      console.log("Staking successful:", data);
+  
+      // Fetch updated leaderboard after staking
+      fetchLeaderboard();
+      setIsStaked(true);
+    } catch (error) {
+      console.error("Error staking:", error);
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-950 to-cyan-950 text-white p-8">
       {/* Hero Section */}
@@ -156,7 +189,10 @@ export default function TournamentPage() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               disabled={isUserInLeaderboard || isStaked || !account}
-              onClick={() => setIsStaked(true)}
+              onClick={async () => {
+                await handleStake();
+                setIsStaked(true);
+              }}
               className={`w-full py-4 px-6 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all
                 ${
                   isUserInLeaderboard || isStaked || !account
