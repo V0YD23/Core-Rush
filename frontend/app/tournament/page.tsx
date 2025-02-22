@@ -1,5 +1,5 @@
 "use client";
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,8 +13,8 @@ import {
   Zap,
   Waves,
 } from "lucide-react";
-import {ethers,BrowserProvider} from "ethers";
-import {Tournament_NFT} from "@/abi/tournament_nft.js"
+import { ethers, BrowserProvider } from "ethers";
+import { Tournament_NFT } from "@/abi/tournament_nft.js";
 const ParticleEffect = () => {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -57,12 +57,13 @@ const scrollToSection = (sectionId: any) => {
     section.scrollIntoView({ behavior: "smooth" });
   }
 };
-const tournament_nft = "0xdAf27a5C2F1307f3b5703E63229A2E1346278496"
+const tournament_nft: string =
+  process.env.NEXT_PUBLIC_TOURNAMENT_NFT_ADDRESS || "";
 const TournamentLanding = () => {
-const api = process.env.NEXT_PUBLIC_BACKEND_API;
+  const api = process.env.NEXT_PUBLIC_BACKEND_API;
   const [hoveredTier, setHoveredTier] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [provider,setProvider] = useState<BrowserProvider>()
+  const [loading, setLoading] = useState(false);
+  const [provider, setProvider] = useState<BrowserProvider>();
   const [account, setAccount] = useState<string | null>(null);
   const buttonVariants = {
     initial: {
@@ -117,77 +118,73 @@ const api = process.env.NEXT_PUBLIC_BACKEND_API;
     },
   };
 
-{/* Add this function to your component */}
-const scrollToSection = (sectionId:any) => {
+  {
+    /* Add this function to your component */
+  }
+  const scrollToSection = (sectionId: any) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
       });
     }
   };
   useEffect(() => {
     loadAccount();
   }, []);
-  async function loadAccount(){
-    if (!window.ethereum) {
-        // toast.error("Please install MetaMask to view available NFTs");
-        setLoading(false);
-        return;
-      }
+  async function loadAccount() {
+    if (typeof window.ethereum !== "undefined") {
       try {
         setLoading(true);
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const userAddress = await signer.getAddress();
         setAccount(userAddress);
-        setProvider(provider)
-
+        setProvider(provider);
       } catch (error) {
         console.error("Error fetching available Account:", error);
-      }   
+      }
+    }
   }
-  const ClaimNFT = async() => {
-    const resp = await fetch(`https://localhost:8443/current-level?publicKey=${account}`)
-    const temp = await resp.json()
-    const lev = temp.level
-    console.log("level "+lev)
-    console.log(typeof(lev))
+  const ClaimNFT = async () => {
+    const resp = await fetch(
+      `https://localhost:8443/current-level?publicKey=${account}`
+    );
+    const temp = await resp.json();
+    const lev = temp.level;
+    console.log("level " + lev);
+    console.log(typeof lev);
 
     const response = await fetch(`${api}/generate-tournament-metadata`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publicKey: account, latest_cleared_level:lev }),
-      });
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ publicKey: account, latest_cleared_level: lev }),
+    });
 
-      if (!response.ok) throw new Error("Failed to generate metadata");
-      const { metadata } = await response.json();
-      const Type = metadata.attributes[1].value;
+    if (!response.ok) throw new Error("Failed to generate metadata");
+    const { metadata } = await response.json();
+    const Type = metadata.attributes[1].value;
 
-      console.log(metadata)
-      console.log(Type)
+    console.log(metadata);
+    console.log(Type);
 
-      if (!metadata) throw new Error("Received null metadata");
+    if (!metadata) throw new Error("Received null metadata");
 
-      const hash = await uploadToIPFS(metadata);
-      if (!hash) throw new Error("Failed to upload metadata to IPFS");
+    const hash = await uploadToIPFS(metadata);
+    if (!hash) throw new Error("Failed to upload metadata to IPFS");
 
+    const signer = await provider?.getSigner();
+    const Tournament_NFT_Contract = new ethers.Contract(
+      tournament_nft,
+      Tournament_NFT,
+      signer
+    );
 
-      const signer = await provider?.getSigner();
-      const Tournament_NFT_Contract  = new ethers.Contract(tournament_nft,Tournament_NFT,signer);
-
-
-      const tx = await Tournament_NFT_Contract?.mintTournamentNFT(Type,hash);
-      await tx.wait();
-      console.log("success")
-
-
-
-
-  }
-
-
+    const tx = await Tournament_NFT_Contract?.mintTournamentNFT(Type, hash);
+    await tx.wait();
+    console.log("success");
+  };
 
   const uploadToIPFS = async (metadata: any) => {
     try {
@@ -311,7 +308,7 @@ const scrollToSection = (sectionId:any) => {
                 initial="initial"
                 whileHover="hover"
                 // onClick={() => scrollToSection("destiny")}
-                onClick={()=> ClaimNFT()}
+                onClick={() => ClaimNFT()}
                 className="px-8 py-4 bg-transparent rounded-lg text-white font-bold text-lg border border-white/30 backdrop-blur-sm hover:bg-white/10 transition-colors duration-300"
               >
                 Claim NFTs
@@ -324,18 +321,18 @@ const scrollToSection = (sectionId:any) => {
       {/* Add these sections to enable smooth scrolling */}
 
       <section id="destiny" className="py-24 px-4 relative">
-  <motion.div
-    initial={{ opacity: 0 }}
-    whileInView={{ opacity: 1 }}
-    transition={{ duration: 1.2 }}
-    className="max-w-6xl mx-auto"
-  >
-    <motion.h2
-      initial={{ opacity: 0, y: -20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, ease: "easeOut" }}
-      className="text-5xl md:text-6xl font-bold text-center text-cyan-100 mb-20"
-    >
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 1.2 }}
+          className="max-w-6xl mx-auto"
+        >
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="text-5xl md:text-6xl font-bold text-center text-cyan-100 mb-20"
+          >
             Choose Your Destiny
           </motion.h2>
 
