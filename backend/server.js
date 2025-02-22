@@ -343,8 +343,8 @@ app.post("/generate-proof", async (req, res) => {
     }
 
     // Load the WebAssembly and witness calculator
-    const wasmPath = "build/game_js/game.wasm";
-    const zkeyPath = "build/game.zkey";
+    const wasmPath = "builds/game_js/game.wasm";
+    const zkeyPath = "builds/game.zkey";
     const input = { finalScore };
 
     // Generate witness
@@ -449,7 +449,6 @@ app.post("/api/Ocean/score",async(req,res)=>{
 https.createServer(options, app).listen(PORT, () => {
   console.log(`Server running at https://localhost:${PORT}`);
 });
-
 
 
 

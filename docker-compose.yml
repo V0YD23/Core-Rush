@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8443"
+    volumes:
+      - ./backend:/app
+    environment:
+      - COINMARKETCAP_API_KEY=c760954b-be91-46e8-bbb3-300969382a87
+      - MONGO_URI=mongodb+srv://user:mongo12345@cluster0.phiye.mongodb.net/temp_coreHack?retryWrites=true&w=majority&appName=Cluster0
+    # depends_on:
+    #   - frontend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "6001:3000"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
