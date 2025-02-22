@@ -467,9 +467,8 @@ app.delete("/api/Ocean/clear-tournament", async (req, res) => {
 
 
 
-// Create HTTPS server
-https.createServer(options, app).listen(PORT, () => {
-  console.log(`Server running at https://localhost:${PORT}`);
+https.createServer(options, app).listen(process.env.PORT || 443, "0.0.0.0", () => {
+  console.log(`Server running at https://0.0.0.0:${process.env.PORT || 443}`);
 });
 
 
