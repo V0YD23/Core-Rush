@@ -433,6 +433,18 @@ app.post("/api/Ocean/score",async(req,res)=>{
 })
 
 
+app.delete("/api/Ocean/clear-tournament", async (req, res) => {
+  try {
+    // Assuming you're using Mongoose and the collection is called 'Ocean'
+    await Ocean.deleteMany({});
+    res.status(200).json({ message: "Tournament data cleared successfully!" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to clear tournament data", details: error.message });
+  }
+});
+
+
+
 
 
 

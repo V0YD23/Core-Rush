@@ -223,6 +223,30 @@ export default function TournamentPage() {
       console.error("Error staking:", error);
     }
   };
+
+  const clearTournamentData = async () => {
+    try {
+      const response = await fetch(`${api}/api/Ocean/clear-tournament`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to clear tournament data");
+      }
+  
+      console.log("Success:", data.message);
+      alert("Tournament data cleared successfully!");
+    } catch (error:any) {
+      console.error("Error:", error.message);
+      alert(`Error clearing data: ${error.message}`);
+    }
+  };
+  
   
   const handleEndTournament = async () => {
     if (!contract) {
@@ -237,6 +261,7 @@ export default function TournamentPage() {
       await tx.wait();
       
       console.log("Tournament ended successfully:", tx.hash);
+      clearTournamentData()
       
       // Refresh leaderboard after ending tournament
       await fetchLeaderboard();
