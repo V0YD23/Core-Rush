@@ -8,7 +8,8 @@ const crypto = require("crypto");
 require("dotenv").config();
 const connectDB = require("./database/conn");
 const app = express();
-const PORT = 8443;
+const PORT = process.env.PORT || 8443; // Use Render’s assigned port
+
 const User = require("./database/models/user");
 const Game = require("./database/models/game");
 const Ocean = require("./database/models/tournament");
@@ -467,8 +468,8 @@ app.delete("/api/Ocean/clear-tournament", async (req, res) => {
 
 
 
-https.createServer(options, app).listen(process.env.PORT || 443, "0.0.0.0", () => {
-  console.log(`Server running at https://0.0.0.0:${process.env.PORT || 443}`);
+https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running at https://0.0.0.0:${PORT}`);
 });
 
 
