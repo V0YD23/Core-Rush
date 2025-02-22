@@ -1,9 +1,18 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Sword, Crown, Coins, ArrowRight, Clock, Wallet } from "lucide-react";
-import { ethers, BrowserProvider,Contract } from "ethers";
-
+import {
+  Trophy,
+  Sword,
+  Crown,
+  Coins,
+  ArrowRight,
+  Clock,
+  Wallet,
+  Flag
+} from "lucide-react";
+import { ethers, BrowserProvider, Contract } from "ethers";
+import { Tournament_Logic } from "@/abi/tournament_logic";
 interface Player {
   _id: string;
   username: string;
@@ -14,30 +23,36 @@ interface Player {
 
 export default function TournamentPage() {
   const api = process.env.NEXT_PUBLIC_BACKEND_API;
+  const tournament_logic_contract: string =
+    process.env.NEXT_PUBLIC_TOURNAMENT_LOGIC_ADDRESS || "";
+
+    const [isEndingTournament, setIsEndingTournament] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isStaked, setIsStaked] = useState(false);
-  const [stakeAmount] = useState(0.5);
-  const [contract,setContract] = useState<Contract>()
+  const [stakeAmount] = useState(0.1);
+  const [contract, setContract] = useState<Contract>();
   const [leaderboardData, setLeaderboardData] = useState<Player[]>([]);
   const [provider, setProvider] = useState<BrowserProvider>();
-  const [account, setAccount] = useState(() => 
-    (typeof window !== "undefined" && localStorage.getItem("account")) || ""
+  const [account, setAccount] = useState(
+    () =>
+      (typeof window !== "undefined" && localStorage.getItem("account")) || ""
   );
   const [loading, setLoading] = useState(true);
 
   // Separate and sort players
   const activePlayers = leaderboardData
-    .filter(player => player.played)
+    .filter((player) => player.played)
     .sort((a, b) => b.score - a.score)
     .map((player, index) => ({ ...player, rank: index + 1 }));
 
-  const waitingPlayers = leaderboardData
-    .filter(player => player.staked && !player.played);
+  const waitingPlayers = leaderboardData.filter(
+    (player) => player.staked && !player.played
+  );
 
   const isUserInLeaderboard = leaderboardData.some(
     (player) => player.username === account
   );
-  
+
   const fetchLeaderboard = async () => {
     try {
       const response = await fetch(`${api}/api/Ocean/leaderBoard`);
@@ -45,7 +60,7 @@ export default function TournamentPage() {
       setLeaderboardData(data);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
+      console.error("Error fetching leaderboard:", error);
       setIsLoading(false);
     }
   };
@@ -60,6 +75,62 @@ export default function TournamentPage() {
     localStorage.setItem("account", account.toString());
   }, [account]);
 
+
+  // Add handler for account changes
+  const handleAccountsChanged = async (accounts: string[]) => {
+    if (accounts.length === 0) {
+      // User disconnected their wallet
+      setAccount("");
+      setProvider(undefined);
+      setContract(undefined);
+      setIsStaked(false);
+    } else {
+      // User switched to a different account
+      const newAccount = accounts[0];
+      setAccount(newAccount);
+      
+      // Reconnect with new account
+      if (window.ethereum) {
+        const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await browserProvider.getSigner();
+        setProvider(browserProvider);
+
+        const stakingContract = new ethers.Contract(
+          tournament_logic_contract,
+          Tournament_Logic,
+          signer
+        );
+        setContract(stakingContract);
+      }
+      
+      // Refresh leaderboard to update UI for new account
+      fetchLeaderboard();
+    }
+  };
+
+  // Add handler for chain changes
+  const handleChainChanged = () => {
+    // Reload the page when chain changes as recommended by MetaMask
+    window.location.reload();
+  };
+
+  // Set up event listeners
+  useEffect(() => {
+    if (window.ethereum) {
+      // Listen for account changes
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      // Listen for chain changes
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      // Cleanup listeners on component unmount
+      return () => {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, []);
+
+  // Update loadAccount function
   async function loadAccount() {
     if (!window.ethereum) {
       setLoading(false);
@@ -67,24 +138,68 @@ export default function TournamentPage() {
     }
     try {
       setLoading(true);
-      const signer = await provider?.getSigner();
-      const userAddress = await signer?.getAddress();
-      if(typeof userAddress !== "undefined"){
+      const browserProvider = new ethers.BrowserProvider(window.ethereum);
+      // Check if already connected
+      const accounts = await browserProvider.listAccounts();
+      
+      if (accounts.length > 0) {
+        const signer = await browserProvider.getSigner();
+        const userAddress = await signer.getAddress();
         setAccount(userAddress);
+        setProvider(browserProvider);
+
+        const stakingContract = new ethers.Contract(
+          tournament_logic_contract,
+          Tournament_Logic,
+          signer
+        );
+        setContract(stakingContract);
       }
-      setProvider(provider);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching available Account:", error);
+      setLoading(false);
     }
   }
 
-  const handleStake = async () => {
-    if (!account) {
-      console.error("Wallet not connected");
+  // Update connectWallet function
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      alert("Please install MetaMask to participate!");
       return;
     }
-  
+
     try {
+      setLoading(true);
+      const browserProvider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await browserProvider.send("eth_requestAccounts", []);
+      await handleAccountsChanged(accounts);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      setLoading(false);
+    }
+  };
+
+
+  const handleStake = async () => {
+    try {
+    console.log(tournament_logic_contract)
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+      const stakingContract = new ethers.Contract(
+        tournament_logic_contract,
+        Tournament_Logic,
+        signer
+      );
+
+      const tx = await stakingContract?.stake({
+        value: ethers.parseEther("0.1"), // Convert 0.5 ETH to Wei
+      });
+  
+      await tx.wait();
+      console.log("Staking successful:", tx.hash);
+  
       const response = await fetch(`${api}/api/Ocean/Stake`, {
         method: "POST",
         headers: {
@@ -109,6 +224,29 @@ export default function TournamentPage() {
     }
   };
   
+  const handleEndTournament = async () => {
+    if (!contract) {
+      console.error("Contract not initialized");
+      return;
+    }
+
+    try {
+      setIsEndingTournament(true);
+      
+      const tx = await contract.endTournament();
+      await tx.wait();
+      
+      console.log("Tournament ended successfully:", tx.hash);
+      
+      // Refresh leaderboard after ending tournament
+      await fetchLeaderboard();
+    } catch (error) {
+      console.error("Error ending tournament:", error);
+    } finally {
+      setIsEndingTournament(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-950 to-cyan-950 text-white p-8">
       {/* Hero Section */}
@@ -138,7 +276,7 @@ export default function TournamentPage() {
           Stake your ETH, climb the leaderboard, and claim legendary rewards in
           the ultimate underwater battle
         </p>
-        
+
         {/* Connected Account Display */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -150,9 +288,11 @@ export default function TournamentPage() {
           <span className="text-cyan-100">
             {account ? (
               <>
-                Connected: 
+                Connected:
                 <span className="ml-2 font-mono text-cyan-300">
-                  {`${account.substring(0, 6)}...${account.substring(account.length - 4)}`}
+                  {`${account.substring(0, 6)}...${account.substring(
+                    account.length - 4
+                  )}`}
                 </span>
               </>
             ) : (
@@ -160,8 +300,39 @@ export default function TournamentPage() {
             )}
           </span>
         </motion.div>
-      </motion.div>
 
+
+
+      </motion.div>
+      {/* Add End Tournament Button after the staking card */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="max-w-md mx-auto mb-16"
+      >
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          disabled={!account || isEndingTournament}
+          onClick={handleEndTournament}
+          className={`w-full py-4 px-6 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all
+            ${
+              !account || isEndingTournament
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-400 hover:to-orange-400"
+            }`}
+        >
+          {isEndingTournament ? (
+            "Ending Tournament..."
+          ) : (
+            <>
+              End Tournament
+              <Flag className="w-5 h-5" />
+            </>
+          )}
+        </motion.button>
+      </motion.div>
       {/* Staking Card */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -184,35 +355,34 @@ export default function TournamentPage() {
                 {stakeAmount} ETH
               </span>
             </div>
-
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={isUserInLeaderboard || isStaked || !account}
-              onClick={async () => {
-                await handleStake();
-                setIsStaked(true);
-              }}
-              className={`w-full py-4 px-6 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all
-                ${
-                  isUserInLeaderboard || isStaked || !account
-                    ? "bg-gray-600 cursor-not-allowed"
-                    : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400"
-                }`}
-            >
-              {!account ? (
-                "Connect Wallet to Participate"
-              ) : isUserInLeaderboard ? (
-                "Already Participating"
-              ) : isStaked ? (
-                "Staked Successfully"
-              ) : (
-                <>
-                  Stake & Enter
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </motion.button>
+  whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.98 }}
+  disabled={isUserInLeaderboard || isStaked}
+  onClick={!account ? connectWallet : handleStake}
+  className={`w-full py-4 px-6 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all
+    ${
+      isUserInLeaderboard || isStaked
+        ? "bg-gray-600 cursor-not-allowed"
+        : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400"
+    }`}
+>
+  {!account ? (
+    <>
+      Connect Wallet
+      <Wallet className="w-5 h-5" />
+    </>
+  ) : isUserInLeaderboard ? (
+    "Already Participating"
+  ) : isStaked ? (
+    "Staked Successfully"
+  ) : (
+    <>
+      Stake & Enter
+      <ArrowRight className="w-5 h-5" />
+    </>
+  )}
+</motion.button>
 
             {isStaked && (
               <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4">

@@ -9,7 +9,8 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install
-
+# If using nodemon in dev
+RUN npm install -g nodemon
 # Copy the rest of the application files
 COPY . .
 
@@ -17,4 +18,4 @@ COPY . .
 EXPOSE 5000
 
 # Command to run the application
-CMD ["node", "server.js"]
+CMD ["nodemon", "server.js"]

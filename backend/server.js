@@ -380,21 +380,31 @@ app.get("/api/Ocean/leaderboard", async (req, res) => {
 });
 
 
-app.post("/api/Ocean/Stake",async(req,res)=>{
+app.post("/api/Ocean/Stake", async (req, res) => {
   try {
-    const {publicKey} = req.body
+    const { publicKey } = req.body;
+
     if (!publicKey) {
       return res.status(400).json({ error: "Public key is required!" });
     }
 
-    const OceanUser = new Ocean.create({username:publicKey})
-    OceanUser.staked = true;
+    // Check if user already exists
+    const existingUser = await Ocean.findOne({ username: publicKey });
+
+    if (existingUser) {
+      return res.status(409).json({ error: "User already staked!" }); // 409 Conflict
+    }
+
+    // Create new user
+    const OceanUser = new Ocean({ username: publicKey, staked: true });
     await OceanUser.save();
-    res.status(201).json({ message: "User joined Tournament successfully!", user });
+
+    res.status(201).json({ message: "User joined Tournament successfully!", user: OceanUser });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-})
+});
+
 
 app.post("/api/Ocean/score",async(req,res)=>{
   const { score, publicKey } = req.body;
@@ -404,9 +414,9 @@ app.post("/api/Ocean/score",async(req,res)=>{
     }
     let tournamentUser = await Ocean.findOne({ username: publicKey });
     if (
-      staked
+      tournamentUser.staked
     ) {
-      console.log(score, gameUser.score);
+      console.log(score, tournamentUser.score);
       tournamentUser.score += 1;
       tournamentUser.played = true;
     }
