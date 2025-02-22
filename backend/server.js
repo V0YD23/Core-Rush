@@ -11,6 +11,7 @@ const app = express();
 const PORT = 8443;
 const User = require("./database/models/user");
 const Game = require("./database/models/game");
+const Ocean = require("./database/models/tournament");
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY; // Store API key securely
 // Connect to MongoDB Atlas
 connectDB();
@@ -368,6 +369,81 @@ app.post("/generate-proof", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.get("/api/Ocean/leaderboard", async (req, res) => {
+  try {
+    const leaderboardData = await Ocean.find(); // Fetch all records
+    res.status(200).json(leaderboardData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+app.post("/api/Ocean/Stake",async(req,res)=>{
+  try {
+    const {publicKey} = req.body
+    if (!publicKey) {
+      return res.status(400).json({ error: "Public key is required!" });
+    }
+
+    const OceanUser = new Ocean.create({username:publicKey})
+    OceanUser.staked = true;
+    await OceanUser.save();
+    res.status(201).json({ message: "User joined Tournament successfully!", user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+})
+
+app.post("/api/Ocean/score",async(req,res)=>{
+  const { score, publicKey } = req.body;
+  try {
+    if (!publicKey) {
+      return res.status(400).json({ error: "Public key is required!" });
+    }
+    let tournamentUser = await Ocean.findOne({ username: publicKey });
+    if (
+      staked
+    ) {
+      console.log(score, gameUser.score);
+      tournamentUser.score += 1;
+      tournamentUser.played = true;
+    }
+
+    await tournamentUser.save();
+
+    console.log("Received Score:", score);
+    res
+      .status(200)
+      .json({ message: "Data received successfully", receivedScore: score });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Create HTTPS server
 https.createServer(options, app).listen(PORT, () => {
