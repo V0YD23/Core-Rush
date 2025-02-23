@@ -9,7 +9,8 @@ import {
   ArrowRight,
   Clock,
   Wallet,
-  Flag
+  Flag,
+  Play
 } from "lucide-react";
 import { ethers, BrowserProvider, Contract } from "ethers";
 import { Tournament_Logic } from "@/abi/tournament_logic";
@@ -74,7 +75,9 @@ export default function TournamentPage() {
   useEffect(() => {
     localStorage.setItem("account", account.toString());
   }, [account]);
-
+  useEffect(() => {
+    // localStorage.setItem("account", account.toString());
+  }, [isStaked]);
 
   // Add handler for account changes
   const handleAccountsChanged = async (accounts: string[]) => {
@@ -247,7 +250,9 @@ export default function TournamentPage() {
     }
   };
   
-  
+  const handleStartGame = async() => {
+    console.log("clcicked")
+  }
   const handleEndTournament = async () => {
     if (!contract) {
       console.error("Contract not initialized");
@@ -274,6 +279,7 @@ export default function TournamentPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-950 to-cyan-950 text-white p-8">
+        
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -325,10 +331,43 @@ export default function TournamentPage() {
             )}
           </span>
         </motion.div>
-
-
-
       </motion.div>
+
+      {/* Start Game Button */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="max-w-md mx-auto mb-8"
+      >
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          disabled={!account || !isStaked}
+          onClick={handleStartGame}
+          className={`w-full py-4 px-6 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all
+            ${
+              !account || !isStaked
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400"
+            }`}
+        >
+          {!account ? (
+            <>
+              Connect Wallet First
+              <Wallet className="w-5 h-5" />
+            </>
+          ) : !isStaked ? (
+            "Stake to Play"
+          ) : (
+            <>
+              Start Game
+              <Play className="w-5 h-5" />
+            </>
+          )}
+        </motion.button>
+      </motion.div>
+
       {/* Add End Tournament Button after the staking card */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -358,6 +397,7 @@ export default function TournamentPage() {
           )}
         </motion.button>
       </motion.div>
+
       {/* Staking Card */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -381,33 +421,33 @@ export default function TournamentPage() {
               </span>
             </div>
             <motion.button
-  whileHover={{ scale: 1.02 }}
-  whileTap={{ scale: 0.98 }}
-  disabled={isUserInLeaderboard || isStaked}
-  onClick={!account ? connectWallet : handleStake}
-  className={`w-full py-4 px-6 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all
-    ${
-      isUserInLeaderboard || isStaked
-        ? "bg-gray-600 cursor-not-allowed"
-        : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400"
-    }`}
->
-  {!account ? (
-    <>
-      Connect Wallet
-      <Wallet className="w-5 h-5" />
-    </>
-  ) : isUserInLeaderboard ? (
-    "Already Participating"
-  ) : isStaked ? (
-    "Staked Successfully"
-  ) : (
-    <>
-      Stake & Enter
-      <ArrowRight className="w-5 h-5" />
-    </>
-  )}
-</motion.button>
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={isUserInLeaderboard || isStaked}
+              onClick={!account ? connectWallet : handleStake}
+              className={`w-full py-4 px-6 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all
+                ${
+                  isUserInLeaderboard || isStaked
+                    ? "bg-gray-600 cursor-not-allowed"
+                    : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400"
+                }`}
+            >
+              {!account ? (
+                <>
+                  Connect Wallet
+                  <Wallet className="w-5 h-5" />
+                </>
+              ) : isUserInLeaderboard ? (
+                "Already Participating"
+              ) : isStaked ? (
+                "Staked Successfully"
+              ) : (
+                <>
+                  Stake & Enter
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
+            </motion.button>
 
             {isStaked && (
               <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
@@ -420,7 +460,6 @@ export default function TournamentPage() {
         </div>
       </motion.div>
 
-      {/* Rest of the components remain the same */}
       {/* Active Players Leaderboard */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
