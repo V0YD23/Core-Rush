@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { connect } from "http2";
+import { GrScorecard } from "react-icons/gr";
 interface WalletConnectProps {
   provider: BrowserProvider | undefined;
   setProvider: React.Dispatch<
@@ -342,19 +343,19 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         }
       );
 
-      const targetScore = await contract.getTargetSet(address);
 
-      const response = await fetch(`${api}/generate-proof`, {
+
+      const response = await fetch(`${api}/api/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ finalScore: Number(gameScore) }),
+        body: JSON.stringify({ publicKey: address }),
       });
 
-      if (!response.ok) throw new Error("Failed to fetch proof");
-      const { calldata } = await response.json();
-      const [a, b, c, input] = calldata;
+      const data = await response.json()
+      const score = data.score
+      setgameScore(score)
 
-      const tx = await contract.withdraw(a, b, c, input);
+      const tx = await contract.withdraw(score);
       await tx.wait();
 
       const wonLastGame = await contract.getLatestGame(address);
@@ -364,7 +365,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          score: Number(gameScore),
+          score: Number(score),
           won: gameWon,
           publicKey: address,
         }),
@@ -379,7 +380,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       toast.custom(
         (t: any) => (
           <div className={`${t.visible ? "animate-enter" : "animate-leave"}`}>
-            <WithdrawSuccessToast amount={gameScore} />
+            <WithdrawSuccessToast amount={score} />
           </div>
         ),
         {
@@ -399,7 +400,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         const response = await fetch(`${api}/generate-metadata-nft`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ publicKey: address, score: gameScore,level:lev }),
+          body: JSON.stringify({ publicKey: address, score: score,level:lev }),
         });
 
         if (!response.ok) throw new Error("Failed to generate metadata");
@@ -419,6 +420,15 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
         const tx = await nftContract?.mintLevelNFT(address, lev, hash);
         await tx.wait();
+
+        const res = await fetch(`${api}/api/update-score`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ publicKey: address }),
+        });
+  
+        if (!res.ok) throw new Error("Failed to fetch proof");
+
 
         // Show NFT mint success toast
         toast.custom(

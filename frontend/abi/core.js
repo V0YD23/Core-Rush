@@ -7,17 +7,6 @@ export const contractABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_verifier",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -90,24 +79,9 @@ export const contractABI = [
 	{
 		"inputs": [
 			{
-				"internalType": "uint256[2]",
-				"name": "a",
-				"type": "uint256[2]"
-			},
-			{
-				"internalType": "uint256[2][2]",
-				"name": "b",
-				"type": "uint256[2][2]"
-			},
-			{
-				"internalType": "uint256[2]",
-				"name": "c",
-				"type": "uint256[2]"
-			},
-			{
-				"internalType": "uint256[1]",
-				"name": "input",
-				"type": "uint256[1]"
+				"internalType": "uint256",
+				"name": "score",
+				"type": "uint256"
 			}
 		],
 		"name": "withdraw",
@@ -237,19 +211,6 @@ export const contractABI = [
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "verifier",
-		"outputs": [
-			{
-				"internalType": "contract IVerifier",
-				"name": "",
-				"type": "address"
 			}
 		],
 		"stateMutability": "view",
