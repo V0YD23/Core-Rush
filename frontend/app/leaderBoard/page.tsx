@@ -23,6 +23,7 @@ const LeaderboardPage = () => {
     setMounted(true);
     const fetchLeaderboard = async () => {
       try {
+        console.log(api)
         const response = await fetch(`${api}/api/leaderBoard`);
         const data: Player[] = await response.json();
         setLeaderboardData(data);

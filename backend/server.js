@@ -8,7 +8,7 @@ const crypto = require("crypto");
 require("dotenv").config();
 const connectDB = require("./database/conn");
 const app = express();
-const PORT = process.env.PORT || 8443; // Use Render’s assigned port
+const PORT = process.env.PORT || 5000; // Use Render’s assigned port
 
 const User = require("./database/models/user");
 const Game = require("./database/models/game");
@@ -27,13 +27,13 @@ const options = {
 app.use(cors("*"));
 
 // Redirect HTTP to HTTPS (optional)
-app.use((req, res, next) => {
-  if (req.protocol === "http") {
-    res.redirect(`https://${req.headers.host}${req.url}`);
-  } else {
-    next();
-  }
-});
+// app.use((req, res, next) => {
+//   if (req.protocol === "http") {
+//     res.redirect(`https://${req.headers.host}${req.url}`);
+//   } else {
+//     next();
+//   }
+// });
 
 // Serve static files from the 'game' folder
 app.use(express.static(path.join(__dirname, "game")));
@@ -97,6 +97,19 @@ app.get("/api/message", async (req, res) => {
   }
 });
 
+
+app.post("/api/died",async(req,res)=>{
+  const {score,died,publicKey} = req.body
+  try {
+    if (!publicKey) {
+      return res.status(400).json({ error: "Public key is required!" });
+    }
+    res.status(200).json({message:"backend got the data successfully","score":score,"died":died,"key":publicKey})
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+})
+
 app.post("/api/message", async (req, res) => {
   const { score, publicKey } = req.body;
   try {
@@ -104,13 +117,8 @@ app.post("/api/message", async (req, res) => {
       return res.status(400).json({ error: "Public key is required!" });
     }
     let gameUser = await Game.findOne({ username: publicKey });
-    if (
-      (score == 1 && gameUser.score == 0) ||
-      (score >= 1 && gameUser.score != 0)
-    ) {
       console.log(score, gameUser.score);
       gameUser.score += 1;
-    }
 
     await gameUser.save();
 
@@ -466,11 +474,13 @@ app.delete("/api/Ocean/clear-tournament", async (req, res) => {
 
 
 
-
-
-https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running at https://0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// https.createServer(app).listen(PORT, "0.0.0.0", () => {
+//   console.log(`Server running at http://0.0.0.0:${PORT}`);
+// });
 
 
 
