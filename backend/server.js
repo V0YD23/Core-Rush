@@ -97,6 +97,19 @@ app.get("/api/message", async (req, res) => {
   }
 });
 
+
+app.post("/api/died",async(req,res)=>{
+  const {score,died,publicKey} = req.body
+  try {
+    if (!publicKey) {
+      return res.status(400).json({ error: "Public key is required!" });
+    }
+    res.status(200).json({message:"backend got the data successfully","score":score,"died":died,"key":publicKey})
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+})
+
 app.post("/api/message", async (req, res) => {
   const { score, publicKey } = req.body;
   try {
@@ -104,13 +117,8 @@ app.post("/api/message", async (req, res) => {
       return res.status(400).json({ error: "Public key is required!" });
     }
     let gameUser = await Game.findOne({ username: publicKey });
-    // if (
-    //   (score == 1 && gameUser.score == 0) ||
-    //   (score >= 1 && gameUser.score != 0)
-    // ) {
       console.log(score, gameUser.score);
       gameUser.score += 1;
-    // }
 
     await gameUser.save();
 
