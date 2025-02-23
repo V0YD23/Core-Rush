@@ -104,13 +104,13 @@ app.post("/api/message", async (req, res) => {
       return res.status(400).json({ error: "Public key is required!" });
     }
     let gameUser = await Game.findOne({ username: publicKey });
-    if (
-      (score == 1 && gameUser.score == 0) ||
-      (score >= 1 && gameUser.score != 0)
-    ) {
+    // if (
+    //   (score == 1 && gameUser.score == 0) ||
+    //   (score >= 1 && gameUser.score != 0)
+    // ) {
       console.log(score, gameUser.score);
       gameUser.score += 1;
-    }
+    // }
 
     await gameUser.save();
 
