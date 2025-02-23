@@ -7,4 +7,5 @@ nodemon server.js &
 sleep 3
 
 # Start ngrok to expose the server
-ngrok http https://localhost:8443
+ngrok http 5000
+

@@ -8,7 +8,7 @@ const crypto = require("crypto");
 require("dotenv").config();
 const connectDB = require("./database/conn");
 const app = express();
-const PORT = process.env.PORT || 8443; // Use Render’s assigned port
+const PORT = process.env.PORT || 5000; // Use Render’s assigned port
 
 const User = require("./database/models/user");
 const Game = require("./database/models/game");
@@ -27,13 +27,13 @@ const options = {
 app.use(cors("*"));
 
 // Redirect HTTP to HTTPS (optional)
-app.use((req, res, next) => {
-  if (req.protocol === "http") {
-    res.redirect(`https://${req.headers.host}${req.url}`);
-  } else {
-    next();
-  }
-});
+// app.use((req, res, next) => {
+//   if (req.protocol === "http") {
+//     res.redirect(`https://${req.headers.host}${req.url}`);
+//   } else {
+//     next();
+//   }
+// });
 
 // Serve static files from the 'game' folder
 app.use(express.static(path.join(__dirname, "game")));
@@ -466,11 +466,13 @@ app.delete("/api/Ocean/clear-tournament", async (req, res) => {
 
 
 
-
-
-https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running at https://0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// https.createServer(app).listen(PORT, "0.0.0.0", () => {
+//   console.log(`Server running at http://0.0.0.0:${PORT}`);
+// });
 
 
 
