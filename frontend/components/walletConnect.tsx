@@ -405,203 +405,285 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   );
 
   return (
-    <>
-      <Toaster position="bottom-right" />
-      <div className="w-full max-w-md mx-auto space-y-6">
-        {!address ? (
+<>
+  <Toaster position="bottom-right" />
+  <div className="w-full max-w-md mx-auto space-y-6">
+    {!address ? (
+      <motion.div
+        variants={{
+          initial: { scale: 0.9, opacity: 0 },
+          animate: { scale: 1, opacity: 1, transition: { duration: 0.5 } }
+        }}
+        initial="initial"
+        animate="animate"
+        className="bg-red-600 rounded-xl p-8 border-4 border-yellow-400 shadow-2xl text-center space-y-4"
+      >
+        <motion.div 
+          className="relative"
+          animate={{ rotate: [0, 10, 0, -10, 0] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          <Shield className="w-20 h-20 text-yellow-400 mx-auto" />
           <motion.div
-            variants={cardVariants}
+            animate={{ scale: [1, 1.5, 1], opacity: [0.7, 1, 0.7] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          >
+            <Star className="absolute top-0 right-1/4 w-8 h-8 text-yellow-300" />
+          </motion.div>
+        </motion.div>
+        <motion.h2 
+          className="text-3xl font-black text-yellow-300 uppercase tracking-wider"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+        >
+          ENTER THE ARENA
+        </motion.h2>
+        <StakeInterface
+          connectWallet={connectWallet}
+          isLoading={isLoading}
+        />
+      </motion.div>
+    ) : (
+      <div className="space-y-6">
+        {/* Connected Address Card */}
+        <motion.div
+          variants={{
+            initial: { x: -100, opacity: 0 },
+            animate: { x: 0, opacity: 1, transition: { duration: 0.5 } }
+          }}
+          initial="initial"
+          animate="animate"
+          className="bg-green-600 rounded-xl p-6 border-4 border-green-800 shadow-2xl"
+        >
+          <div className="flex items-center gap-3">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+            >
+              <Shield className="w-10 h-10 text-yellow-400" />
+            </motion.div>
+            <div>
+              <p className="text-sm font-bold text-white">
+                PLAYER CONNECTED
+              </p>
+              <p className="text-xl font-black text-yellow-300">
+                {address.substring(0, 6)}...
+                {address.substring(address.length - 4)}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Balance Card */}
+        <motion.div
+          variants={{
+            initial: { y: 50, opacity: 0 },
+            animate: { y: 0, opacity: 1, transition: { duration: 0.5, delay: 0.2 } }
+          }}
+          initial="initial"
+          animate="animate"
+          className="bg-blue-600 rounded-xl p-6 border-4 border-blue-800 shadow-2xl"
+        >
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ repeat: Infinity, duration: 1 }}
+              >
+                <Coins className="w-12 h-12 text-yellow-400" />
+              </motion.div>
+              <motion.div
+                animate={{ scale: [1, 1.5, 1], opacity: [0.7, 1, 0.7] }}
+                transition={{ repeat: Infinity, duration: 1 }}
+              >
+                <Sparkles className="absolute -top-2 -right-2 w-5 h-5 text-yellow-300" />
+              </motion.div>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">
+                LOOT CHEST
+              </p>
+              <motion.p 
+                className="text-3xl font-black text-yellow-300"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                {stakedBalance} ETH
+              </motion.p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Staking Section */}
+        <motion.div
+          variants={{
+            initial: { y: 50, opacity: 0 },
+            animate: { y: 0, opacity: 1, transition: { duration: 0.5, delay: 0.4 } }
+          }}
+          initial="initial"
+          animate="animate"
+          className="bg-purple-700 rounded-xl p-6 border-4 border-purple-900 shadow-2xl"
+        >
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-white">
+                POWER LEVEL TARGET
+              </label>
+              <input
+                type="number"
+                value={expectedScore}
+                onChange={(e) => setExpectedScore(e.target.value)}
+                placeholder="Enter power (0-100)"
+                className="w-full px-4 py-3 bg-purple-900 rounded-xl border-2 border-purple-900 focus:border-yellow-300 focus:ring-4 focus:ring-yellow-400/20 transition-all text-yellow-300 placeholder-yellow-200/50 font-bold"
+                min="0"
+                max="100"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-white">
+                ENERGY CHARGE
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  value={stakeAmount}
+                  onChange={(e) => setStakeAmount(e.target.value)}
+                  placeholder="ETH amount"
+                  className="flex-1 px-4 py-3 bg-purple-900 rounded-xl border-2 border-purple-900 focus:border-yellow-300 focus:ring-4 focus:ring-yellow-400/20 transition-all text-yellow-300 placeholder-yellow-200/50 font-bold"
+                  min="0"
+                  step="0.01"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleStake}
+                  disabled={
+                    isLoading ||
+                    !stakeAmount ||
+                    Number(stakeAmount) <= 0 ||
+                    !expectedScore
+                  }
+                  className="px-6 py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white shadow-lg transition-all duration-200 flex items-center gap-2 border-b-4 border-red-900 hover:border-red-700 disabled:opacity-50 disabled:cursor-not-allowed active:border-b-0 transform active:translate-y-1"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                    >
+                      <Star className="w-5 h-5" />
+                    </motion.div>
+                  )}
+                  CHARGE UP!
+                </motion.button>
+              </div>
+            </div>
+
+            {isCalculatingProfit ? (
+              <div className="animate-pulse bg-purple-900 rounded-xl p-4 border-2 border-purple-900">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin text-yellow-400" />
+                  <p className="text-sm font-bold text-yellow-300">
+                    CALCULATING BONUS...
+                  </p>
+                </div>
+              </div>
+            ) : estimatedProfit !== null && Number(stakeAmount) > 0 ? (
+              <motion.div 
+                className="bg-purple-900 rounded-xl p-4 border-2 border-purple-900"
+                animate={{ borderColor: ['#facc15', '#fde047', '#facc15'] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                <p className="text-sm font-bold text-white mb-1">
+                  BONUS REWARDS
+                </p>
+                <motion.p 
+                  className="text-xl font-bold text-yellow-300"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                >
+                  {estimatedProfit.toFixed(4)} ETH
+                </motion.p>
+                <p className="text-xs text-white mt-2">
+                  POWER LEVEL: {expectedScore} POINTS
+                </p>
+              </motion.div>
+            ) : null}
+          </div>
+        </motion.div>
+
+        {/* Game Controls */}
+        {isStaked && (
+          <motion.button
+            variants={{
+              initial: { scale: 0.9, opacity: 0 },
+              hover: { scale: 1.05, boxShadow: "0 0 15px 5px rgba(255,0,0,0.5)" },
+              tap: { scale: 0.95 }
+            }}
+            initial="initial"
+            animate={{ scale: 1, opacity: 1 }}
+            whileHover="hover"
+            whileTap="tap"
+            onClick={handlePlayGame}
+            className="w-full px-8 py-4 bg-red-600 rounded-xl font-black text-2xl text-white shadow-2xl transition-all duration-200 flex items-center justify-center gap-3 border-b-4 border-red-900 uppercase tracking-wider"
+          >
+            <motion.div
+              animate={{ rotate: [-10, 10, -10] }}
+              transition={{ repeat: Infinity, duration: 1 }}
+            >
+              <Gamepad className="w-8 h-8" />
+            </motion.div>
+            <motion.span
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ repeat: Infinity, duration: 0.8 }}
+            >
+              BATTLE NOW!
+            </motion.span>
+          </motion.button>
+        )}
+
+        {/* Withdraw Section */}
+        <CollectCoins
+          gameScore={gameScore}
+          setGameScore={setgameScore}
+          handleWithdraw={handleWithdraw}
+          isLoading={isLoading}
+          stakedBalance={stakedBalance}
+        />
+
+        {/* Error Display */}
+        {error && (
+          <motion.div
+            variants={{
+              initial: { scale: 0.9, opacity: 0 },
+              animate: { scale: 1, opacity: 1, transition: { duration: 0.3 } }
+            }}
             initial="initial"
             animate="animate"
-            className="bg-gradient-to-br from-yellow-900/90 to-yellow-700/90 rounded-xl p-8 border-4 border-yellow-400 shadow-2xl text-center space-y-4 backdrop-blur-sm"
+            className="bg-red-600 rounded-xl p-6 border-4 border-yellow-400 shadow-2xl flex items-center gap-3"
           >
-            <div className="relative">
-              <Shield className="w-16 h-16 text-yellow-400 mx-auto" />
-              <Star className="absolute top-0 right-1/4 w-6 h-6 text-yellow-300 animate-ping" />
-            </div>
-            <h2 className="text-3xl font-black text-yellow-300 uppercase tracking-wider">
-              Join The Tournament
-            </h2>
-            <StakeInterface
-              connectWallet={connectWallet}
-              isLoading={isLoading}
-            />
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ repeat: Infinity, duration: 0.5 }}
+            >
+              <AlertCircle className="w-8 h-8 text-yellow-400" />
+            </motion.div>
+            <p className="text-white font-bold">{error}</p>
           </motion.div>
-        ) : (
-          <div className="space-y-6">
-            {/* Connected Address Card */}
-            <motion.div
-              variants={cardVariants}
-              initial="initial"
-              animate="animate"
-              className="bg-gradient-to-r from-green-900/90 to-green-700/90 rounded-xl p-6 border-4 border-green-400 shadow-2xl backdrop-blur-sm"
-            >
-              <div className="flex items-center gap-3">
-                <Shield className="w-8 h-8 text-green-400" />
-                <div>
-                  <p className="text-sm font-bold text-green-300">
-                    Champion Connected
-                  </p>
-                  <p className="text-xl font-black text-green-200">
-                    {address.substring(0, 6)}...
-                    {address.substring(address.length - 4)}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Balance Card */}
-            <motion.div
-              variants={cardVariants}
-              initial="initial"
-              animate="animate"
-              className="bg-gradient-to-r from-yellow-900/90 to-yellow-700/90 rounded-xl p-6 border-4 border-yellow-400 shadow-2xl backdrop-blur-sm"
-            >
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <Coins className="w-10 h-10 text-yellow-400 animate-bounce" />
-                  <Sparkles className="absolute -top-2 -right-2 w-4 h-4 text-yellow-300 animate-pulse" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-yellow-300">
-                    Battle Treasury
-                  </p>
-                  <p className="text-3xl font-black text-yellow-200">
-                    {stakedBalance} ETH
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Staking Section */}
-            <motion.div
-              variants={cardVariants}
-              initial="initial"
-              animate="animate"
-              className="bg-gradient-to-r from-emerald-800/90 to-teal-600/90 rounded-xl p-6 border-4 border-emerald-400 shadow-2xl backdrop-blur-sm"
-            >
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-emerald-200">
-                    Expected Score
-                  </label>
-                  <input
-                    type="number"
-                    value={expectedScore}
-                    onChange={(e) => setExpectedScore(e.target.value)}
-                    placeholder="Enter score (0-100)"
-                    className="w-full px-4 py-3 bg-emerald-50 rounded-xl border-2 border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-300/20 transition-all text-emerald-900 placeholder-emerald-500"
-                    min="0"
-                    max="100"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-emerald-200">
-                    Power Up Amount
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={stakeAmount}
-                      onChange={(e) => setStakeAmount(e.target.value)}
-                      placeholder="Amount in ETH"
-                      className="flex-1 px-4 py-3 bg-emerald-50 rounded-xl border-2 border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-300/20 transition-all text-emerald-900 placeholder-emerald-500"
-                      min="0"
-                      step="0.01"
-                    />
-                    <button
-                      onClick={handleStake}
-                      disabled={
-                        isLoading ||
-                        !stakeAmount ||
-                        Number(stakeAmount) <= 0 ||
-                        !expectedScore
-                      }
-                      className="px-6 py-3 bg-teal-500 hover:bg-teal-400 rounded-xl font-bold text-white shadow-lg transition-all duration-200 flex items-center gap-2 border-b-4 border-teal-700 hover:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed active:border-b-0 transform active:translate-y-1"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <Star className="w-5 h-5" />
-                      )}
-                      Power Up!
-                    </button>
-                  </div>
-                </div>
-
-                {isCalculatingProfit ? (
-                  <div className="animate-pulse bg-emerald-100 rounded-xl p-4">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
-                      <p className="text-sm font-bold text-emerald-600">
-                        Calculating bonus...
-                      </p>
-                    </div>
-                  </div>
-                ) : estimatedProfit !== null && Number(stakeAmount) > 0 ? (
-                  <div className="bg-teal-100 rounded-xl p-4 border-2 border-teal-200">
-                    <p className="text-sm font-bold text-teal-700 mb-1">
-                      Bonus Coins
-                    </p>
-                    <p className="text-xl font-bold text-teal-800">
-                      {estimatedProfit.toFixed(4)} ETH
-                    </p>
-                    <p className="text-xs text-teal-600 mt-2">
-                      Power level: {expectedScore} points
-                    </p>
-                  </div>
-                ) : null}
-              </div>
-            </motion.div>
-
-            {/* Game Controls */}
-            {isStaked && (
-              <motion.button
-                variants={buttonVariants}
-                initial="initial"
-                whileHover="hover"
-                whileTap="tap"
-                onClick={handlePlayGame}
-                className="w-full px-8 py-4 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 rounded-xl font-black text-2xl text-white shadow-2xl transition-all duration-200 flex items-center justify-center gap-3 border-b-4 border-red-900 uppercase tracking-wider"
-              >
-                <Gamepad className="w-8 h-8" />
-                Enter Battle!
-              </motion.button>
-            )}
-
-            {/* Withdraw Section */}
-            <CollectCoins
-              gameScore={gameScore}
-              setGameScore={setgameScore}
-              handleWithdraw={handleWithdraw}
-              isLoading={isLoading}
-              stakedBalance={stakedBalance}
-            />
-
-            {/* Error Display */}
-            {error && (
-              <motion.div
-                variants={cardVariants}
-                initial="initial"
-                animate="animate"
-                className="bg-gradient-to-r from-red-900/90 to-red-700/90 rounded-xl p-6 border-4 border-red-400 shadow-2xl backdrop-blur-sm flex items-center gap-3"
-              >
-                <AlertCircle className="w-8 h-8 text-red-400" />
-                <p className="text-red-200 font-bold">{error}</p>
-              </motion.div>
-            )}
-          </div>
         )}
-        {/* NFT Mint Popup */}
-        <NFTMintPopup
-          isOpen={isPopupOpen}
-          onClose={() => setIsPopupOpen(false)}
-          level={currentLevel}
-          autoCloseDelay={5000} // Optional: automatically close after 5 seconds
-        />
       </div>
-    </>
+    )}
+    {/* NFT Mint Popup */}
+    <NFTMintPopup
+      isOpen={isPopupOpen}
+      onClose={() => setIsPopupOpen(false)}
+      level={currentLevel}
+      autoCloseDelay={5000} // Optional: automatically close after 5 seconds
+    />
+  </div>
+</>
   );
 };
 
