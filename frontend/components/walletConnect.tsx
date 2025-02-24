@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { Toaster, toast } from "react-hot-toast";
 import { Contract } from "ethers";
+import { motion } from "framer-motion";
 import StakeInterface from "../components/stakeInterface";
 import NFTMintPopup from "../components/nft";
-import { Star, Coins, Heart } from "lucide-react";
+import { Star, Coins, Shield, Sparkles } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
 import { uploadToIPFS } from "@/utils/ipfsUpload";
 import CollectCoins from "./collectCoins";
@@ -32,6 +33,23 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   const [nftContract, setNftContract] = useState<Contract>();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(1);
+  const buttonVariants = {
+    initial: { scale: 1 },
+    hover: {
+      scale: 1.05,
+      transition: { duration: 0.2 },
+    },
+    tap: { scale: 0.95 },
+  };
+
+  const cardVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3 },
+    },
+  };
   const [gameScore, setgameScore] = useState(
     () =>
       (typeof window !== "undefined" && localStorage.getItem("gameScore")) || ""
@@ -288,7 +306,9 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       );
 
       if (gameWon) {
-        const resp = await fetch(`${api}/api/User/current-level?publicKey=${address}`);
+        const resp = await fetch(
+          `${api}/api/User/current-level?publicKey=${address}`
+        );
         const temp = await resp.json();
         const lev = temp.level;
         console.log("level " + lev);
@@ -300,7 +320,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
           body: JSON.stringify({
             publicKey: address,
             score: score,
-            level: lev-1,
+            level: lev - 1,
           }),
         });
 
@@ -332,7 +352,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         toast.custom(
           (t: any) => (
             <div className={`${t.visible ? "animate-enter" : "animate-leave"}`}>
-              <NFTMintSuccessToast level={lev-1} />
+              <NFTMintSuccessToast level={lev - 1} />
             </div>
           ),
           {
@@ -366,10 +386,12 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
   // Function to handle game navigation
   const handlePlayGame = async () => {
-    const resp = await fetch(`${api}/api/User/current-level?publicKey=${address}`);
+    const resp = await fetch(
+      `${api}/api/User/current-level?publicKey=${address}`
+    );
     const temp = await resp.json();
     const lev = temp.level;
-    console.log("cliecke")
+    console.log("cliecke");
     router.push(`/game/level_${lev}/Game.html?publicKey=${address}`); // Replace with your actual game route
   };
   const { connectWallet } = useWallet(
@@ -384,150 +406,168 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
   return (
     <>
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          className: "",
-          style: {
-            background: "#363636",
-            color: "#fff",
-            padding: "16px",
-            borderRadius: "8px",
-          },
-        }}
-      />
-      <div className="w-full max-w-md mx-auto space-y-6 animate-fadeIn">
+      <Toaster position="bottom-right" />
+      <div className="w-full max-w-md mx-auto space-y-6">
         {!address ? (
-          <div className="bg-white/90 rounded-xl p-8 border-4 border-yellow-400 shadow-xl text-center space-y-4">
-            <Star className="w-16 h-16 text-yellow-400 mx-auto animate-spin" />
-            <h2 className="text-2xl font-bold text-blue-700">
-              Start Your Adventure!
+          <motion.div
+            variants={cardVariants}
+            initial="initial"
+            animate="animate"
+            className="bg-gradient-to-br from-yellow-900/90 to-yellow-700/90 rounded-xl p-8 border-4 border-yellow-400 shadow-2xl text-center space-y-4 backdrop-blur-sm"
+          >
+            <div className="relative">
+              <Shield className="w-16 h-16 text-yellow-400 mx-auto" />
+              <Star className="absolute top-0 right-1/4 w-6 h-6 text-yellow-300 animate-ping" />
+            </div>
+            <h2 className="text-3xl font-black text-yellow-300 uppercase tracking-wider">
+              Join The Tournament
             </h2>
             <StakeInterface
               connectWallet={connectWallet}
               isLoading={isLoading}
             />
-          </div>
+          </motion.div>
         ) : (
           <div className="space-y-6">
             {/* Connected Address Card */}
-            <div className="bg-white/90 rounded-xl p-4 border-4 border-green-400 shadow-lg">
+            <motion.div
+              variants={cardVariants}
+              initial="initial"
+              animate="animate"
+              className="bg-gradient-to-r from-green-900/90 to-green-700/90 rounded-xl p-6 border-4 border-green-400 shadow-2xl backdrop-blur-sm"
+            >
               <div className="flex items-center gap-3">
-                <Heart className="w-6 h-6 text-red-500 animate-pulse" />
-                <div className="text-sm font-bold text-blue-700">
-                  Player Connected:
-                  <span className="ml-2 text-red-500">
+                <Shield className="w-8 h-8 text-green-400" />
+                <div>
+                  <p className="text-sm font-bold text-green-300">
+                    Champion Connected
+                  </p>
+                  <p className="text-xl font-black text-green-200">
                     {address.substring(0, 6)}...
                     {address.substring(address.length - 4)}
-                  </span>
+                  </p>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Staked Balance Card */}
-            <div className="bg-yellow-300 rounded-xl p-6 border-4 border-yellow-500 shadow-lg">
-              <div className="flex items-center gap-3">
-                <Coins className="w-8 h-8 text-yellow-600 animate-bounce" />
+            {/* Balance Card */}
+            <motion.div
+              variants={cardVariants}
+              initial="initial"
+              animate="animate"
+              className="bg-gradient-to-r from-yellow-900/90 to-yellow-700/90 rounded-xl p-6 border-4 border-yellow-400 shadow-2xl backdrop-blur-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Coins className="w-10 h-10 text-yellow-400 animate-bounce" />
+                  <Sparkles className="absolute -top-2 -right-2 w-4 h-4 text-yellow-300 animate-pulse" />
+                </div>
                 <div>
-                  <p className="text-sm text-yellow-800 font-bold">
-                    Coins Collected
+                  <p className="text-sm font-bold text-yellow-300">
+                    Battle Treasury
                   </p>
-                  <p className="text-2xl font-bold text-yellow-900">
+                  <p className="text-3xl font-black text-yellow-200">
                     {stakedBalance} ETH
                   </p>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Staking Section */}
-            <div className="bg-white/90 rounded-xl p-6 border-4 border-blue-400 shadow-lg space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-blue-700">
-                  Expected Score
-                </label>
-                <input
-                  type="number"
-                  value={expectedScore}
-                  onChange={(e) => setExpectedScore(e.target.value)}
-                  placeholder="Enter score (0-100)"
-                  className="w-full px-4 py-3 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-200 transition-all text-blue-700"
-                  min="0"
-                  max="100"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-blue-700">
-                  Power Up Amount
-                </label>
-                <div className="flex gap-2">
+            <motion.div
+              variants={cardVariants}
+              initial="initial"
+              animate="animate"
+              className="bg-gradient-to-r from-emerald-800/90 to-teal-600/90 rounded-xl p-6 border-4 border-emerald-400 shadow-2xl backdrop-blur-sm"
+            >
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-emerald-200">
+                    Expected Score
+                  </label>
                   <input
                     type="number"
-                    value={stakeAmount}
-                    onChange={(e) => setStakeAmount(e.target.value)}
-                    placeholder="Amount in ETH"
-                    className="flex-1 px-4 py-3 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-200 transition-all text-blue-700"
+                    value={expectedScore}
+                    onChange={(e) => setExpectedScore(e.target.value)}
+                    placeholder="Enter score (0-100)"
+                    className="w-full px-4 py-3 bg-emerald-50 rounded-xl border-2 border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-300/20 transition-all text-emerald-900 placeholder-emerald-500"
                     min="0"
-                    step="0.01"
+                    max="100"
                   />
-                  <button
-                    onClick={handleStake}
-                    disabled={
-                      isLoading ||
-                      !stakeAmount ||
-                      Number(stakeAmount) <= 0 ||
-                      !expectedScore
-                    }
-                    className="px-6 py-3 bg-green-500 hover:bg-green-400 rounded-xl font-bold text-white shadow-lg transition-all duration-200 flex items-center gap-2 border-b-4 border-green-700 hover:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed active:border-b-0 transform active:translate-y-1"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Star className="w-5 h-5" />
-                    )}
-                    Power Up!
-                  </button>
                 </div>
-              </div>
 
-              {/* Estimated Profit Display */}
-              {isCalculatingProfit ? (
-                <div className="animate-pulse bg-blue-100 rounded-xl p-4">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
-                    <p className="text-sm font-bold text-blue-500">
-                      Calculating bonus...
-                    </p>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-emerald-200">
+                    Power Up Amount
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={stakeAmount}
+                      onChange={(e) => setStakeAmount(e.target.value)}
+                      placeholder="Amount in ETH"
+                      className="flex-1 px-4 py-3 bg-emerald-50 rounded-xl border-2 border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-300/20 transition-all text-emerald-900 placeholder-emerald-500"
+                      min="0"
+                      step="0.01"
+                    />
+                    <button
+                      onClick={handleStake}
+                      disabled={
+                        isLoading ||
+                        !stakeAmount ||
+                        Number(stakeAmount) <= 0 ||
+                        !expectedScore
+                      }
+                      className="px-6 py-3 bg-teal-500 hover:bg-teal-400 rounded-xl font-bold text-white shadow-lg transition-all duration-200 flex items-center gap-2 border-b-4 border-teal-700 hover:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed active:border-b-0 transform active:translate-y-1"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Star className="w-5 h-5" />
+                      )}
+                      Power Up!
+                    </button>
                   </div>
                 </div>
-              ) : estimatedProfit !== null && Number(stakeAmount) > 0 ? (
-                <div className="bg-green-100 rounded-xl p-4 border-2 border-green-200">
-                  <p className="text-sm font-bold text-green-700 mb-1">
-                    Bonus Coins
-                  </p>
-                  <p className="text-xl font-bold text-green-600">
-                    {estimatedProfit.toFixed(4)} ETH
-                  </p>
-                  <p className="text-xs text-green-600 mt-2">
-                    Power level: {expectedScore} points
-                  </p>
-                </div>
-              ) : null}
-            </div>
 
-            {isStaked && (
-              <div className="mt-4">
-                <button
-                  onClick={handlePlayGame}
-                  className="w-full px-6 py-4 bg-red-500 hover:bg-red-400 rounded-xl font-bold text-white shadow-lg transition-all duration-200 flex items-center justify-center gap-2 border-b-4 border-red-700 hover:border-red-500 active:border-b-0 transform active:translate-y-1"
-                >
-                  <Gamepad className="w-6 h-6" />
-                  Start Game!
-                </button>
-                <p className="text-sm font-bold text-green-600 text-center mt-2">
-                  Power-up activated! Ready to play! 🎮
-                </p>
+                {isCalculatingProfit ? (
+                  <div className="animate-pulse bg-emerald-100 rounded-xl p-4">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+                      <p className="text-sm font-bold text-emerald-600">
+                        Calculating bonus...
+                      </p>
+                    </div>
+                  </div>
+                ) : estimatedProfit !== null && Number(stakeAmount) > 0 ? (
+                  <div className="bg-teal-100 rounded-xl p-4 border-2 border-teal-200">
+                    <p className="text-sm font-bold text-teal-700 mb-1">
+                      Bonus Coins
+                    </p>
+                    <p className="text-xl font-bold text-teal-800">
+                      {estimatedProfit.toFixed(4)} ETH
+                    </p>
+                    <p className="text-xs text-teal-600 mt-2">
+                      Power level: {expectedScore} points
+                    </p>
+                  </div>
+                ) : null}
               </div>
+            </motion.div>
+
+            {/* Game Controls */}
+            {isStaked && (
+              <motion.button
+                variants={buttonVariants}
+                initial="initial"
+                whileHover="hover"
+                whileTap="tap"
+                onClick={handlePlayGame}
+                className="w-full px-8 py-4 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 rounded-xl font-black text-2xl text-white shadow-2xl transition-all duration-200 flex items-center justify-center gap-3 border-b-4 border-red-900 uppercase tracking-wider"
+              >
+                <Gamepad className="w-8 h-8" />
+                Enter Battle!
+              </motion.button>
             )}
 
             {/* Withdraw Section */}
@@ -541,12 +581,15 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
             {/* Error Display */}
             {error && (
-              <div className="bg-red-100 border-4 border-red-400 rounded-xl p-4 flex items-center gap-3 animate-slideIn max-w-full overflow-hidden break-words">
-                <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
-                <p className="text-red-500 text-sm font-bold break-words overflow-hidden">
-                  {error}
-                </p>
-              </div>
+              <motion.div
+                variants={cardVariants}
+                initial="initial"
+                animate="animate"
+                className="bg-gradient-to-r from-red-900/90 to-red-700/90 rounded-xl p-6 border-4 border-red-400 shadow-2xl backdrop-blur-sm flex items-center gap-3"
+              >
+                <AlertCircle className="w-8 h-8 text-red-400" />
+                <p className="text-red-200 font-bold">{error}</p>
+              </motion.div>
             )}
           </div>
         )}

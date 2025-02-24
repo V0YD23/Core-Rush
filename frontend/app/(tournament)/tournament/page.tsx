@@ -1,35 +1,29 @@
-"use client";
-import React, { useState,useEffect } from "react";
+"use client"
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles,
-  Trophy,
-  Shield,
-  Sword,
-  Crown,
-  Star,
-  Flame,
-  Zap,
-  Waves,
+  Sparkles, Trophy, Shield, Sword, Crown, Star, Flame, Zap, Gamepad,
+  HeartPulse, Brain, Wind
 } from "lucide-react";
-import {ethers,BrowserProvider} from "ethers";
-import {Tournament_NFT} from "@/abi/tournament_nft.js"
+import { ethers, BrowserProvider } from "ethers";
+import { Tournament_NFT } from "@/abi/tournament_nft.js";
+
 const ParticleEffect = () => {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {[...Array(40)].map((_, i) => (
         <motion.div
           key={i}
-          className={`absolute w-${(i % 3) + 1} h-${(i % 3) + 1} rounded-full ${
+          className={`absolute w-2 h-2 rounded-full ${
             i % 4 === 0
-              ? "bg-cyan-400"
+              ? "bg-blue-500"
               : i % 4 === 1
-              ? "bg-blue-400"
+              ? "bg-purple-500"
               : i % 4 === 2
-              ? "bg-teal-400"
-              : "bg-sky-400"
-          } opacity-${i % 2 ? "60" : "40"}`}
+              ? "bg-red-500"
+              : "bg-yellow-500"
+          } opacity-60`}
           initial={{
             x: Math.random() * window.innerWidth,
             y: window.innerHeight + 10,
@@ -41,84 +35,101 @@ const ParticleEffect = () => {
             rotate: 360,
           }}
           transition={{
-            duration: 4 + Math.random() * 6,
+            duration: 2 + Math.random() * 3,
             repeat: Infinity,
             ease: "linear",
-            delay: Math.random() * 4,
+            delay: Math.random() * 2,
           }}
         />
       ))}
     </div>
   );
 };
-const scrollToSection = (sectionId: any) => {
-  const section = document.getElementById(sectionId);
-  if (section) {
-    section.scrollIntoView({ behavior: "smooth" });
-  }
+
+const PowerMeter = ({ power = 75 }) => {
+  return (
+    <div className="relative w-32 h-4 bg-gray-800 rounded-full overflow-hidden border-2 border-white">
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${power}%` }}
+        className="h-full bg-gradient-to-r from-red-500 to-yellow-500"
+      />
+    </div>
+  );
 };
-const tournament_nft = "0xdAf27a5C2F1307f3b5703E63229A2E1346278496"
+
+const tournament_nft = "0xdAf27a5C2F1307f3b5703E63229A2E1346278496";
+
 const TournamentLanding = () => {
-const api = process.env.NEXT_PUBLIC_BACKEND_API;
+  const api = process.env.NEXT_PUBLIC_BACKEND_API;
   const [hoveredTier, setHoveredTier] = useState("");
   const [loading, setLoading] = useState(true);
   const [provider,setProvider] = useState<BrowserProvider>()
   const [account, setAccount] = useState<string | null>(null);
+
   const buttonVariants = {
-    initial: {
-      scale: 1,
-      transition: { duration: 0.3 },
-    },
+    initial: { scale: 1 },
     hover: {
-      scale: 1.05,
-      boxShadow: "0 0 20px rgba(255, 255, 255, 0.3)",
-      transition: { duration: 0.3 },
-    },
+      scale: 1.1,
+      transition: { 
+        duration: 0.2,
+        yoyo: Infinity
+      }
+    }
   };
+
   const heroVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 50 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        duration: 1.2,
-        ease: "easeOut",
-      },
-    },
+      transition: { duration: 0.5 }
+    }
   };
 
-  const tiers = {
-    bronze: {
-      title: "Ocean Warrior",
-      description: "Master the depths in the Aqua Arena",
-      icon: Shield,
-      color: "from-cyan-400 via-cyan-600 to-cyan-900",
-      buttonColor:
-        "bg-gradient-to-r from-cyan-400 to-cyan-600 hover:from-cyan-500 hover:to-cyan-700",
-      accent: "#22d3ee",
-    },
-    silver: {
-      title: "Storm Bringer",
-      description: "Command lightning in the Tempest Battleground",
+  const characters = {
+    warrior: {
+      title: "MEGA WARRIOR",
+      description: "CRUSH YOUR ENEMIES WITH BRUTE FORCE!",
       icon: Sword,
-      color: "from-blue-400 via-blue-600 to-blue-900",
-      buttonColor:
-        "bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700",
-      accent: "#3b82f6",
+      stats: {
+        health: 90,
+        attack: 85,
+        defense: 75,
+        speed: 50
+      },
+      color: "bg-red-600",
+      buttonColor: "bg-red-500 hover:bg-red-400"
     },
-    gold: {
-      title: "Azure Legend",
-      description: "Rise to godhood in the Celestial Arena",
-      icon: Crown,
-      color: "from-sky-400 via-sky-600 to-sky-900",
-      buttonColor:
-        "bg-gradient-to-r from-sky-400 to-sky-600 hover:from-sky-500 hover:to-sky-700",
-      accent: "#0ea5e9",
+    mage: {
+      title: "ARCANE MASTER",
+      description: "UNLEASH DEVASTATING MAGICAL POWER!",
+      icon: Brain,
+      stats: {
+        health: 60,
+        attack: 90,
+        defense: 40,
+        speed: 70
+      },
+      color: "bg-purple-600",
+      buttonColor: "bg-purple-500 hover:bg-purple-400"
     },
+    rogue: {
+      title: "SHADOW STRIKER",
+      description: "STRIKE FROM THE SHADOWS!",
+      icon: Wind,
+      stats: {
+        health: 70,
+        attack: 75,
+        defense: 50,
+        speed: 90
+      },
+      color: "bg-green-600",
+      buttonColor: "bg-green-500 hover:bg-green-400"
+    }
   };
 
-{/* Add this function to your component */}
-const scrollToSection = (sectionId:any) => {
+  const scrollToSection = (sectionId:string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ 
@@ -127,329 +138,205 @@ const scrollToSection = (sectionId:any) => {
       });
     }
   };
+
   useEffect(() => {
     loadAccount();
   }, []);
-  async function loadAccount(){
+
+  async function loadAccount() {
     if (!window.ethereum) {
-        // toast.error("Please install MetaMask to view available NFTs");
-        setLoading(false);
-        return;
-      }
-      try {
-        setLoading(true);
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const userAddress = await signer.getAddress();
-        setAccount(userAddress);
-        setProvider(provider)
-
-      } catch (error) {
-        console.error("Error fetching available Account:", error);
-      }   
+      setLoading(false);
+      return;
+    }
+    try {
+      setLoading(true);
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const userAddress = await signer.getAddress();
+      setAccount(userAddress);
+      setProvider(provider);
+    } catch (error) {
+      console.error("Error fetching available Account:", error);
+    }   
   }
-  const ClaimNFT = async() => {
-    const resp = await fetch(`https://localhost:8443/current-level?publicKey=${account}`)
-    const temp = await resp.json()
-    const lev = temp.level
-    console.log("level "+lev)
-    console.log(typeof(lev))
 
-    const response = await fetch(`${api}/generate-tournament-metadata`, {
+  const ClaimNFT = async() => {
+    try {
+      const resp = await fetch(`https://localhost:8443/current-level?publicKey=${account}`);
+      const temp = await resp.json();
+      const lev = temp.level;
+
+      const response = await fetch(`${api}/generate-tournament-metadata`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publicKey: account, latest_cleared_level:lev }),
+        body: JSON.stringify({ publicKey: account, latest_cleared_level: lev }),
       });
 
       if (!response.ok) throw new Error("Failed to generate metadata");
       const { metadata } = await response.json();
-      const Type = metadata.attributes[1].value;
-
-      console.log(metadata)
-      console.log(Type)
-
+      
       if (!metadata) throw new Error("Received null metadata");
 
       const hash = await uploadToIPFS(metadata);
       if (!hash) throw new Error("Failed to upload metadata to IPFS");
 
-
       const signer = await provider?.getSigner();
-      const Tournament_NFT_Contract  = new ethers.Contract(tournament_nft,Tournament_NFT,signer);
-
-
-      const tx = await Tournament_NFT_Contract?.mintTournamentNFT(Type,hash);
+      const Tournament_NFT_Contract = new ethers.Contract(tournament_nft, Tournament_NFT, signer);
+      
+      const tx = await Tournament_NFT_Contract?.mintTournamentNFT(metadata.attributes[1].value, hash);
       await tx.wait();
-      console.log("success")
+      console.log("NFT Claimed Successfully!");
+    } catch (error) {
+      console.error("Error claiming NFT:", error);
+    }
+  };
 
-
-
-
-  }
-
-
-
-  const uploadToIPFS = async (metadata: any) => {
+  const uploadToIPFS = async (metadata:any) => {
     try {
-      const url = "https://api.pinata.cloud/pinning/pinJSONToIPFS"; // Use pinJSONToIPFS for metadata
-
-      const response = await axios.post(url, metadata, {
-        headers: {
-          "Content-Type": "application/json",
-          pinata_api_key: "30822c42812cd6ea5b8c",
-          pinata_secret_api_key:
-            "efa8ce1324868fbe358863c37069edb9542087a67df7ddaf6b61ca10a232081b",
-        },
-      });
-
-      // Get IPFS hash (CID)
-      const ipfsHash = response.data.IpfsHash;
-      console.log(`✅ Metadata uploaded! IPFS Hash: ${ipfsHash}`);
-      return `ipfs://${ipfsHash}`; // Return IPFS URL
-    } catch (error: any) {
-      console.error(
-        "❌ Error uploading metadata to IPFS:",
-        error.response ? error.response.data : error.message
+      const response = await axios.post(
+        "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+        metadata,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            pinata_api_key: "30822c42812cd6ea5b8c",
+            pinata_secret_api_key: "efa8ce1324868fbe358863c37069edb9542087a67df7ddaf6b61ca10a232081b",
+          },
+        }
       );
+      return `ipfs://${response.data.IpfsHash}`;
+    } catch (error) {
+      console.error("Error uploading to IPFS:", error);
       return null;
     }
   };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-blue-950 to-cyan-950 overflow-hidden font-[Cinzel]">
+    <div className="min-h-screen bg-gray-900 font-mono relative overflow-hidden">
       <ParticleEffect />
 
+      {/* Hero Section */}
       <motion.section
         initial="hidden"
         animate="visible"
         variants={heroVariants}
-        className="relative  h-screen flex items-center justify-center text-center px-4"
+        className="relative h-screen flex items-center justify-center px-4"
       >
-        <div className="absolute  inset-0 overflow-hidden">
-          <motion.div
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.8, 0.9, 0.8],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            className="absolute inset-0 bg-[url('/api/placeholder/1920/1080')] bg-cover bg-center opacity-20"
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/70 to-cyan-950"></div>
-          </motion.div>
-        </div>
-
-        <div className="relative  z-10 max-w-5xl mx-auto">
+        <div className="relative z-10 max-w-5xl mx-auto text-center">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{
-              duration: 1.5,
-              ease: "easeOut",
-            }}
-            className="relative"
+            transition={{ duration: 0.5 }}
           >
-            <motion.div
+            <motion.h1
               animate={{
-                textShadow: [
-                  "0 0 20px #22d3ee",
-                  "0 0 40px #22d3ee",
-                  "0 0 20px #22d3ee",
-                ],
+                color: ["#ef4444", "#8b5cf6", "#22c55e", "#f97316"],
               }}
               transition={{
                 duration: 4,
                 repeat: Infinity,
                 ease: "linear",
               }}
-              className="text-7xl md:text-8xl font-bold text-white mb-8 tracking-wider"
+              className="text-8xl font-black mb-8 tracking-widest"
             >
-              Aqua Legends
+              TOURNAMENT OF CHAMPIONS
+            </motion.h1>
+
+            <motion.div className="flex justify-center gap-8 mb-12">
+              <Shield className="text-red-500 w-16 h-16" />
+              <Sword className="text-purple-500 w-16 h-16" />
+              <Crown className="text-green-500 w-16 h-16" />
             </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, ease: "easeOut" }}
-              className="text-2xl md:text-3xl text-cyan-100 mb-12 font-[Spectral]"
-            >
-              Dive into the mystical waters of Aquaria, where legendary warriors
-              wield Sacred NFTs in epic battles
-            </motion.p>
-
-            <motion.div
-              className="flex justify-center gap-8 mb-12"
-              animate={{
-                y: [0, -15, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            >
-              <Waves className="text-cyan-400 w-12 h-12" />
-              <Trophy className="text-blue-400 w-12 h-12" />
-              <Sparkles className="text-sky-400 w-12 h-12" />
-            </motion.div>
-
-            <motion.div className="flex justify-center gap-6">
+            <div className="flex justify-center gap-6">
               <motion.button
                 variants={buttonVariants}
                 initial="initial"
                 whileHover="hover"
-                onClick={() => scrollToSection("destiny")}
-                className="px-8 py-4 bg-transparent rounded-lg text-white font-bold text-lg border border-white/30 backdrop-blur-sm hover:bg-white/10 transition-colors duration-300"
+                onClick={() => scrollToSection("characters")}
+                className="px-8 py-4 bg-red-500 rounded-lg text-white font-bold text-2xl uppercase border-b-4 border-red-700"
               >
-                Play Tournament
+                Choose Your Champion
               </motion.button>
 
               <motion.button
                 variants={buttonVariants}
                 initial="initial"
                 whileHover="hover"
-                // onClick={() => scrollToSection("destiny")}
-                onClick={()=> ClaimNFT()}
-                className="px-8 py-4 bg-transparent rounded-lg text-white font-bold text-lg border border-white/30 backdrop-blur-sm hover:bg-white/10 transition-colors duration-300"
+                onClick={ClaimNFT}
+                className="px-8 py-4 bg-purple-500 rounded-lg text-white font-bold text-2xl uppercase border-b-4 border-purple-700"
               >
-                Claim NFTs
+                Claim Tournament NFT
               </motion.button>
-            </motion.div>
+            </div>
           </motion.div>
         </div>
       </motion.section>
 
-      {/* Add these sections to enable smooth scrolling */}
-
-      <section id="destiny" className="py-24 px-4 relative">
-  <motion.div
-    initial={{ opacity: 0 }}
-    whileInView={{ opacity: 1 }}
-    transition={{ duration: 1.2 }}
-    className="max-w-6xl mx-auto"
-  >
-    <motion.h2
-      initial={{ opacity: 0, y: -20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, ease: "easeOut" }}
-      className="text-5xl md:text-6xl font-bold text-center text-cyan-100 mb-20"
-    >
-            Choose Your Destiny
+      {/* Character Selection */}
+      <section id="characters" className="py-24 px-4 relative">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-6xl mx-auto"
+        >
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-6xl font-black text-center text-white mb-20 uppercase"
+          >
+            Select Your Champion
           </motion.h2>
 
-          <div className="grid md:grid-cols-3 gap-12">
-            {Object.entries(tiers).map(([key, tier]) => (
+          <div className="grid md:grid-cols-3 gap-8">
+            {Object.entries(characters).map(([key, character]) => (
               <motion.div
                 key={key}
-                whileHover={{
-                  scale: 1.05,
-                  y: -15,
-                }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                onHoverStart={() => setHoveredTier(key)}
-                onHoverEnd={() => setHoveredTier("")}
-                className={`relative overflow-hidden rounded-xl p-8 bg-gradient-to-br ${tier.color} backdrop-blur-xl border border-opacity-30 border-cyan-200`}
-                style={{
-                  boxShadow:
-                    hoveredTier === key ? `0 0 40px ${tier.accent}` : "none",
-                }}
+                whileHover={{ scale: 1.05, y: -10 }}
+                className={`${character.color} rounded-lg p-8 border-4 border-white`}
               >
                 <motion.div
-                  className="absolute top-4 right-4"
-                  animate={{
-                    rotate: hoveredTier === key ? 360 : 0,
-                    scale: hoveredTier === key ? 1.3 : 1,
-                  }}
-                  transition={{ duration: 1, ease: "easeOut" }}
+                  whileHover={{ rotate: 360, scale: 1.2 }}
+                  transition={{ duration: 0.3 }}
+                  className="mb-6"
                 >
-                  <tier.icon className="w-10 h-10 text-cyan-100" />
+                  <character.icon className="w-16 h-16 text-white mx-auto" />
                 </motion.div>
 
-                <h3 className="text-3xl font-bold text-cyan-100 mb-6">
-                  {tier.title}
+                <h3 className="text-3xl font-black text-white mb-4">
+                  {character.title}
                 </h3>
-                <p className="text-xl text-cyan-200 mb-8 font-[Spectral]">
-                  {tier.description}
+                <p className="text-xl text-white mb-6">
+                  {character.description}
                 </p>
 
+                <div className="space-y-3 mb-6">
+                  {Object.entries(character.stats).map(([stat, value]) => (
+                    <div key={stat} className="flex items-center gap-2">
+                      <span className="text-white capitalize w-20">{stat}</span>
+                      <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${value}%` }}
+                          className="h-full bg-white"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 <motion.button
-                  className={`w-full ${tier.buttonColor} text-white font-bold py-4 px-8 rounded-lg text-lg`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className={`w-full ${character.buttonColor} text-white font-bold py-4 px-8 rounded-lg text-xl uppercase`}
                 >
-                  Play this Tournament
+                  Select Champion
                 </motion.button>
               </motion.div>
             ))}
           </div>
         </motion.div>
-      </section>
-
-      <section className="py-24 px-4 bg-blue-950 bg-opacity-50 relative">
-        <div className="max-w-6xl mx-auto text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="text-5xl md:text-6xl font-bold text-cyan-100 mb-20"
-          >
-            Legendary Features
-          </motion.h2>
-
-          <div className="grid md:grid-cols-3 gap-12">
-            {[
-              {
-                title: "Ocean Battles",
-                description: "Command the tides in epic underwater tournaments",
-                icon: Sword,
-                color: "from-cyan-800 via-cyan-900 to-cyan-950",
-              },
-              {
-                title: "Mythic Rewards",
-                description: "Collect sacred artifacts and legendary tokens",
-                icon: Star,
-                color: "from-blue-800 via-blue-900 to-blue-950",
-              },
-              {
-                title: "Divine Evolution",
-                description: "Transform your warrior with each victory",
-                icon: Sparkles,
-                color: "from-sky-800 via-sky-900 to-sky-950",
-              },
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.3, ease: "easeOut" }}
-                whileHover={{
-                  scale: 1.05,
-                  y: -15,
-                }}
-                className={`p-8 rounded-xl bg-gradient-to-br ${feature.color} backdrop-blur-xl border border-opacity-30 border-cyan-200`}
-              >
-                <motion.div
-                  whileHover={{
-                    rotate: 360,
-                    scale: 1.2,
-                  }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                >
-                  <feature.icon className="w-16 h-16 text-cyan-400 mx-auto mb-6" />
-                </motion.div>
-                <h3 className="text-2xl font-bold text-cyan-100 mb-4">
-                  {feature.title}
-                </h3>
-                <p className="text-xl text-cyan-200 font-[Spectral]">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
       </section>
     </div>
   );
