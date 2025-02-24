@@ -25,9 +25,6 @@ app.use(corsConfig);
 app.use(express.static(path.join(__dirname, "game")));
 
 // Serve the main HTML file
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "game", "First Game.html"));
-});
 
 app.use(express.json()); // Middleware to parse JSON bodies
 
