@@ -6,7 +6,7 @@ import { ethers } from "ethers";
 import { Toaster, toast } from "react-hot-toast";
 import { BrowserProvider } from "ethers";
 import { Contract } from "ethers";
-import { contractABI } from "../abi/core.js";
+import { contractABI } from "../abi/staking.js";
 import { NFT } from "../abi/nft.js";
 import StakeInterface from "../components/stakeInterface";
 import NFTMintPopup from "../components/nft";
@@ -134,6 +134,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
   // 🔹 Load `address` from localStorage on component mount
   useEffect(() => {
+    console.log(isLoading)
     const storedAddress = localStorage.getItem("address");
     if (storedAddress) {
       setAddress(storedAddress);
@@ -226,7 +227,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   const connectWallet = async () => {
     if (typeof window.ethereum !== "undefined") {
       try {
-        setIsLoading(true);
+        // setIsLoading(true);
         const ethProvider = new ethers.BrowserProvider(window.ethereum);
         const signer = await ethProvider.getSigner();
         const userAddress = await signer.getAddress();
@@ -256,11 +257,11 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
           body: JSON.stringify({ publicKey: userAddress }),
         });
 
-        if (!response.ok) throw new Error("Failed to fetch proof");
+        if (!response.ok) throw new Error("Failed to Create User");
       } catch (error) {
         setError("Connection failed: " + (error as Error).message);
       } finally {
-        setIsLoading(false);
+        // setIsLoading(false);
       }
     } else {
       setError("MetaMask is not installed.");
@@ -292,7 +293,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     }
     console.log("Expected Score :", expectedScore);
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       setError("");
 
       const tx = await contract.stake(expectedScore, {
@@ -309,7 +310,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     } catch (error) {
       setError("Staking failed: " + (error as Error).message);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 
@@ -323,7 +324,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     }
 
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       setError("");
 
       // Show pending toast
@@ -345,27 +346,30 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
 
 
-      const response = await fetch(`${api}/api/message`, {
-        method: "POST",
+      const response = await fetch(`${api}/api/message?publicKey=${encodeURIComponent(address)}`, {
+        method: "GET",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publicKey: address }),
       });
+      
 
       const data = await response.json()
       const score = data.score
       setgameScore(score)
+      console.log(score)
 
       const tx = await contract.withdraw(score);
       await tx.wait();
 
-      const wonLastGame = await contract.getLatestGame(address);
-      const gameWon = wonLastGame ? 1 : 0;
+      // const wonLastGame = await contract.getLatestGame(address);
+      // const gameWon = wonLastGame ? 1 : 0;
+      const gameWon = 1;
+      console.log(score,gameWon,address);
 
       const gameEndResponse = await fetch(`${api}/game-end`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          score: Number(score),
+          score: score,
           won: gameWon,
           publicKey: address,
         }),
@@ -390,7 +394,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
       if (gameWon) {
 
-        const resp = await fetch(`https://localhost:8443/current-level?publicKey=${address}`)
+        const resp = await fetch(`${api}/current-level?publicKey=${address}`)
         const temp = await resp.json()
         const lev = temp.level
         console.log("level "+lev)
@@ -421,7 +425,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         const tx = await nftContract?.mintLevelNFT(address, lev, hash);
         await tx.wait();
 
-        const res = await fetch(`${api}/api/update-score`, {
+        const res = await fetch(`${api}/api/reset-score`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ publicKey: address }),
@@ -462,7 +466,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       );
       setError("Withdrawal failed: " + (error as Error).message);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 

@@ -104,13 +104,13 @@ app.post("/api/reset-score",async(req,res)=>{
       return res.status(400).json({ error: "Public key is required!" });
     }
 
-    if(died){
+    // if(died){
       const gameUser = await Game.findOne({username:publicKey})
       gameUser.score = 0
       gameUser.latest_game = 0
       await gameUser.save();
-      res.status(200).json({message:"backend got the data successfully","score":score,"died":died,"key":publicKey})
-    }
+      res.status(200).json({message:"score has reset"})
+    // }
 
 
   } catch (error) {
@@ -120,29 +120,29 @@ app.post("/api/reset-score",async(req,res)=>{
 
 
 
-app.post("/api/died",async(req,res)=>{
-  const {died,publicKey} = req.body
-  try {
-    if (!publicKey) {
-      return res.status(400).json({ error: "Public key is required!" });
-    }
+// app.post("/api/died",async(req,res)=>{
+//   const {died,publicKey} = req.body
+//   try {
+//     if (!publicKey) {
+//       return res.status(400).json({ error: "Public key is required!" });
+//     }
 
-    if(died){
-      const gameUser = await Game.findOne({username:publicKey})
-      if (gameUser.score >= gameUser.expected_score) {
-        gameUser.latest_game = 1
-      }
-      else{
-        gameUser.latest_game = 0
-      }
-      res.status(200).json({message:"backend got the data successfully","score":score,"died":died,"key":publicKey})
-    }
+//     if(died){
+//       const gameUser = await Game.findOne({username:publicKey})
+//       if (gameUser.score >= gameUser.expected_score) {
+//         gameUser.latest_game = 1
+//       }
+//       else{
+//         gameUser.latest_game = 0
+//       }
+//       res.status(200).json({message:"backend got the data successfully","score":score,"died":died,"key":publicKey})
+//     }
 
 
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-})
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// })
 
 app.post("/api/message", async (req, res) => {
   const { score, publicKey } = req.body;
