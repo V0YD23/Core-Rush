@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
@@ -6,10 +5,11 @@ import { NFT } from "@/abi/nft.js";
 import { listNFTcontractABI } from "@/abi/listnft.js";
 import { BrowserProvider, Contract } from "ethers";
 import Image from "next/image";
-import { toast, Toaster } from 'react-hot-toast';
+import { toast, Toaster } from "react-hot-toast";
 
-const NFTcontractAddress:string = process.env.NEXT_PUBLIC_NFT_ADDRESS || "";
-const listNFTcontractAddress:string = process.env.NEXT_PUBLIC_LIST_NFT_ADDRESS || "";
+const NFTcontractAddress: string = process.env.NEXT_PUBLIC_NFT_ADDRESS || "";
+const listNFTcontractAddress: string =
+  process.env.NEXT_PUBLIC_LIST_NFT_ADDRESS || "";
 
 export default function MyNFTs() {
   const [nfts, setNfts] = useState<{ tokenId: number; metadata: any }[]>([]);
@@ -21,7 +21,10 @@ export default function MyNFTs() {
   const [tokenIdtoRent, setTokenIdtoRent] = useState<number>(0);
   const [pricePerHour, setPricePerHour] = useState<number>(0);
   const [showModal, setShowModal] = useState(false);
-  const [selectedNft, setSelectedNft] = useState<{ tokenId: number; metadata: any } | null>(null);
+  const [selectedNft, setSelectedNft] = useState<{
+    tokenId: number;
+    metadata: any;
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -56,23 +59,26 @@ export default function MyNFTs() {
     try {
       setIsSubmitting(true);
       toast.loading("Preparing to list your NFT...");
-      
+
       // Convert price to wei (assuming input is in ETH)
       const priceInWei = ethers.parseEther(pricePerHour.toString());
-      
+
       // First approve the NFT for transfer
-      const approveTx = await nftContract.approve(listNFTcontractAddress, tokenIdtoRent);
+      const approveTx = await nftContract.approve(
+        listNFTcontractAddress,
+        tokenIdtoRent
+      );
       toast.loading("Approving NFT transfer...");
       await approveTx.wait();
-      
+
       // Then list it for rent
       const tx = await contract.listNFTForRent(tokenIdtoRent, priceInWei);
       toast.loading("Confirming transaction...");
       await tx.wait();
-      
+
       toast.dismiss();
       toast.success(`NFT #${tokenIdtoRent} listed successfully!`);
-      
+
       closeModal();
       loadNFTs(); // Refresh the NFT list
     } catch (error: any) {
@@ -100,7 +106,11 @@ export default function MyNFTs() {
       setProvider(provider);
 
       const contract = new ethers.Contract(NFTcontractAddress, NFT, signer);
-      const listNFTContract = new ethers.Contract(listNFTcontractAddress, listNFTcontractABI, signer);
+      const listNFTContract = new ethers.Contract(
+        listNFTcontractAddress,
+        listNFTcontractABI,
+        signer
+      );
       setContract(listNFTContract);
       setNftContract(contract);
 
@@ -108,17 +118,17 @@ export default function MyNFTs() {
       const tokenIds: number[] = await contract.getOwnedNFTs(userAddress);
       const nftData = await Promise.all(
         tokenIds.map(async (tokenId) => {
-            const tokenUri: string = await contract.tokenURI(tokenId);
-            // const cleanedTokenUri = tokenUri.replace("ipfs://", "");
-            // console.log(cleanedTokenUri);
-            console.log(tokenUri)
-            
+          const tokenUri: string = await contract.tokenURI(tokenId);
+          // const cleanedTokenUri = tokenUri.replace("ipfs://", "");
+          // console.log(cleanedTokenUri);
+          console.log(tokenUri);
+
           const metadata = await fetchMetadata(tokenUri);
           return { tokenId, metadata };
         })
       );
 
-      console.log(nftData)
+      console.log(nftData);
 
       setNfts(nftData);
     } catch (error: any) {
@@ -134,11 +144,11 @@ export default function MyNFTs() {
       const ipfsHash = ipfsUri.replace("ipfs://", "");
       const url = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
       const response = await fetch(url);
-    //   console.log(response)
+      //   console.log(response)
 
       if (!response.ok) throw new Error("Failed to fetch metadata");
-      const data = await response.json()
-      console.log(data)
+      const data = await response.json();
+      console.log(data);
       return data;
     } catch (error) {
       console.error("❌ Error fetching metadata:", error);
@@ -148,29 +158,40 @@ export default function MyNFTs() {
 
   function getRarityColor(rarity: string) {
     switch (rarity?.toLowerCase()) {
-      case "legendary": return "text-yellow-400";
-      case "epic": return "text-purple-500";
-      case "rare": return "text-blue-500";
-      case "uncommon": return "text-green-500";
-      default: return "text-gray-300";
+      case "legendary":
+        return "text-yellow-400";
+      case "epic":
+        return "text-purple-500";
+      case "rare":
+        return "text-blue-500";
+      case "uncommon":
+        return "text-green-500";
+      default:
+        return "text-gray-300";
     }
   }
 
   function getRarityBorder(rarity: string) {
     switch (rarity?.toLowerCase()) {
-      case "legendary": return "border-yellow-400";
-      case "epic": return "border-purple-500";
-      case "rare": return "border-blue-500";
-      case "uncommon": return "border-green-500";
-      default: return "border-gray-400";
+      case "legendary":
+        return "border-yellow-400";
+      case "epic":
+        return "border-purple-500";
+      case "rare":
+        return "border-blue-500";
+      case "uncommon":
+        return "border-green-500";
+      default:
+        return "border-gray-400";
     }
   }
 
   function getRarityFromAttributes(attributes: any[]) {
     if (!attributes) return "common";
-    const rarityAttr = attributes.find(attr => 
-      attr.trait_type?.toLowerCase() === "rarity" || 
-      attr.trait_type?.toLowerCase() === "tier"
+    const rarityAttr = attributes.find(
+      (attr) =>
+        attr.trait_type?.toLowerCase() === "rarity" ||
+        attr.trait_type?.toLowerCase() === "tier"
     );
     return rarityAttr?.value || "common";
   }
@@ -178,7 +199,7 @@ export default function MyNFTs() {
   return (
     <div className="p-6">
       <Toaster position="top-right" />
-      
+
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center">
@@ -186,12 +207,15 @@ export default function MyNFTs() {
             🎮 YOUR NFT INVENTORY
           </h1>
           <div className="bg-gray-800 px-4 py-2 rounded-full mt-2 mb-4 flex items-center space-x-2 shadow-lg">
-            <div className={`w-3 h-3 rounded-full ${account ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <div
+              className={`w-3 h-3 rounded-full ${
+                account ? "bg-green-500" : "bg-red-500"
+              }`}
+            ></div>
             <p className="text-sm font-mono">
-              {account 
-                ? `${account.slice(0, 6)}...${account.slice(-4)}` 
-                : "Connect Wallet"
-              }
+              {account
+                ? `${account.slice(0, 6)}...${account.slice(-4)}`
+                : "Connect Wallet"}
             </p>
           </div>
         </div>
@@ -199,8 +223,10 @@ export default function MyNFTs() {
         {/* Loading State */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-4 text-blue-400 font-semibold">Loading your NFT collection...</p>
+            <div className="w-16 h-16 border-4 border-white-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-white-400 font-semibold">
+              Loading your NFT collection...
+            </p>
           </div>
         )}
 
@@ -209,7 +235,9 @@ export default function MyNFTs() {
           <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700 shadow-xl">
             <div className="mb-4 text-6xl">🎲</div>
             <h3 className="text-xl font-bold mb-2">Your inventory is empty!</h3>
-            <p className="text-gray-400 mb-6">Complete quests to earn game NFTs</p>
+            <p className="text-gray-400 mb-6">
+              Complete quests to earn game NFTs
+            </p>
             <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200 shadow-lg shadow-blue-900/50">
               Start Adventure
             </button>
@@ -223,70 +251,96 @@ export default function MyNFTs() {
               const rarity = getRarityFromAttributes(nft.metadata?.attributes);
               const rarityColor = getRarityColor(rarity);
               const rarityBorder = getRarityBorder(rarity);
-              
+
               return (
-                <div 
+                <div
                   key={index}
-                  className={`bg-gray-800 rounded-lg overflow-hidden border-2 ${rarityBorder} transition-all duration-300 hover:shadow-lg hover:shadow-${rarityBorder.replace('border-', '')}/30 hover:-translate-y-1`}
+                  className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl overflow-hidden border-2 transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl flex flex-col"
+                  style={{
+                    boxShadow: `0 10px 25px -5px ${rarityColor}`,
+                    borderColor: rarityBorder.replace("border-", ""),
+                  }}
                 >
-                  {/* NFT Image */}
-                  <div className="relative h-48 bg-gray-900 flex items-center justify-center">
+                  {/* NFT Image Container */}
+                  <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-gray-800 to-gray-900 flex items-center justify-center p-3">
+                    {/* NFT Image */}
                     {nft.metadata?.image ? (
-                      <Image
-                        src={nft.metadata.metadata.image.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')}
-                        alt={nft.metadata?.name || "NFT"}
-                        layout="fill"
-                        objectFit="contain"
-                        className="p-2"
-                      />
+                      <div className="relative w-full h-full rounded-lg overflow-hidden">
+                        <Image
+                          src={nft.metadata.metadata.image.replace(
+                            "ipfs://",
+                            "https://gateway.pinata.cloud/ipfs/"
+                          )}
+                          alt={nft.metadata?.name || "NFT"}
+                          layout="fill"
+                          objectFit="cover"
+                          className="p-2"
+                        />
+                      </div>
                     ) : (
-                      <div className="text-4xl">🎮</div>
+                      <div className="text-5xl animate-bounce">🎮</div>
                     )}
-                    
+
                     {/* Rarity Badge */}
-                    <div className={`absolute top-2 right-2 px-2 py-1 rounded-md text-xs font-bold uppercase ${rarityColor} bg-gray-900 bg-opacity-70`}>
+                    <div
+                      className={`absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-bold uppercase ${rarityColor} bg-gray-900 bg-opacity-70 backdrop-filter backdrop-blur-sm`}
+                    >
                       {rarity}
                     </div>
-                    
+
                     {/* Token ID Badge */}
-                    <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md text-xs font-mono bg-black bg-opacity-70">
+                    <div className="absolute bottom-2 left-2 px-3 py-1 bg-black bg-opacity-70 backdrop-filter backdrop-blur-sm rounded-lg text-xs font-mono border border-gray-700">
                       #{nft.tokenId.toString()}
                     </div>
                   </div>
-                  
+
                   {/* NFT Info */}
-                  <div className="p-4">
-                    <h3 className="text-lg font-bold mb-1 truncate">
+                  <div className="p-5 flex flex-col flex-1">
+                    {/* Title */}
+                    <h3
+                      className={`text-lg font-bold mb-1 truncate ${rarityColor}`}
+                    >
                       {nft.metadata?.name || "Unnamed NFT"}
                     </h3>
-                    <p className="text-gray-400 text-sm mb-4 h-12 overflow-hidden">
-                      {nft.metadata?.description || "No description"}
+
+                    {/* Description */}
+                    <p className="text-gray-400 text-sm mb-4 line-clamp-3">
+                      {nft.metadata?.description || "No description available."}
                     </p>
-                    
-                    {/* Attributes */}
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {nft.metadata?.attributes
-                        ?.filter((attr: any) => 
-                          attr.trait_type?.toLowerCase() !== "rarity" && 
-                          attr.trait_type?.toLowerCase() !== "tier"
-                        )
-                        .slice(0, 4)
-                        .map((attr: any, idx: number) => (
-                          <div 
-                            key={idx}
-                            className="bg-gray-700 bg-opacity-50 px-2 py-1 rounded text-xs"
-                          >
-                            <span className="text-gray-400">{attr.trait_type}: </span>
-                            <span className="font-medium">{attr.value}</span>
-                          </div>
-                        ))
-                      }
-                    </div>
-                    
+
+                    {/* Attributes Grid */}
+                    {nft.metadata?.attributes?.length > 0 && (
+                      <div className="grid grid-cols-2 gap-2 mt-auto">
+                        {nft.metadata.attributes
+                          .filter(
+                            (attr: any) =>
+                              attr.trait_type?.toLowerCase() !== "rarity" &&
+                              attr.trait_type?.toLowerCase() !== "tier"
+                          )
+                          .slice(0, 4)
+                          .map((attr: any, idx: any) => (
+                            <div
+                              key={idx}
+                              className={`bg-gray-800 bg-opacity-70 px-3 py-2 rounded-lg text-xs border-l-2 ${rarityBorder}`}
+                            >
+                              <span className="text-gray-400 block text-xs">
+                                {attr.trait_type}
+                              </span>
+                              <span className="font-medium text-white">
+                                {attr.value}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+
                     {/* Action Button */}
-                    <button 
+                    <button
                       onClick={() => openRentModal(nft)}
-                      className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200 text-sm font-bold shadow-md"
+                      className={`w-full mt-5 ${rarityColor.replace(
+                        "text-",
+                        "bg-"
+                      )} hover:bg-opacity-80 py-3 px-4 rounded-lg transition-all duration-300 text-sm font-bold shadow-lg text-white`}
                     >
                       List for Rent
                     </button>
@@ -306,27 +360,32 @@ export default function MyNFTs() {
               <h3 className="text-xl font-bold text-blue-400">
                 List NFT for Rent
               </h3>
-              <button 
+              <button
                 onClick={closeModal}
                 className="text-gray-400 hover:text-white"
               >
                 ×
               </button>
             </div>
-            
+
             <div className="mb-6">
               <div className="flex items-center space-x-4 mb-4">
                 <div className="relative w-16 h-16 bg-gray-900 rounded-md overflow-hidden flex-shrink-0">
                   {selectedNft.metadata?.image ? (
                     <Image
-                      src={selectedNft.metadata.metadata.image.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')}
+                      src={selectedNft.metadata.metadata.image.replace(
+                        "ipfs://",
+                        "https://gateway.pinata.cloud/ipfs/"
+                      )}
                       alt={selectedNft.metadata?.name || "NFT"}
                       layout="fill"
                       objectFit="contain"
                       className="p-1"
                     />
                   ) : (
-                    <div className="text-2xl flex items-center justify-center h-full">🎮</div>
+                    <div className="text-2xl flex items-center justify-center h-full">
+                      🎮
+                    </div>
                   )}
                 </div>
                 <div>
@@ -338,7 +397,7 @@ export default function MyNFTs() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -351,7 +410,7 @@ export default function MyNFTs() {
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
                     Price per hour (ETH)
@@ -361,7 +420,9 @@ export default function MyNFTs() {
                     step="0.001"
                     min="0"
                     value={pricePerHour}
-                    onChange={(e) => setPricePerHour(parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      setPricePerHour(parseFloat(e.target.value))
+                    }
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="0.1"
                   />
@@ -371,7 +432,7 @@ export default function MyNFTs() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex space-x-3">
               <button
                 onClick={closeModal}
@@ -383,12 +444,12 @@ export default function MyNFTs() {
                 onClick={listForRent}
                 disabled={isSubmitting}
                 className={`flex-1 px-4 py-2 rounded-md transition duration-200 font-medium ${
-                  isSubmitting 
-                    ? 'bg-gray-600 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  isSubmitting
+                    ? "bg-gray-600 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
                 }`}
               >
-                {isSubmitting ? 'Processing...' : 'List NFT'}
+                {isSubmitting ? "Processing..." : "List NFT"}
               </button>
             </div>
           </div>
