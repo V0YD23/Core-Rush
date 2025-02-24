@@ -14,7 +14,7 @@ export const WithdrawSuccessToast = ({ amount }: { amount: string }) => (
   </div>
 );
 
-export const NFTMintSuccessToast = ({ level }: { level: string }) => (
+export const NFTMintSuccessToast = ({ level }: { level: number }) => (
   <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500/90 to-purple-600/90 rounded-xl border-2 border-blue-400 shadow-lg backdrop-blur-sm">
     <div className="flex-shrink-0">
       <Trophy className="w-6 h-6 text-yellow-300 animate-float" />

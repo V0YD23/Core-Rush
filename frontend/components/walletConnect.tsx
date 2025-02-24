@@ -300,7 +300,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
           body: JSON.stringify({
             publicKey: address,
             score: score,
-            level: lev,
+            level: lev-1,
           }),
         });
 
@@ -332,7 +332,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         toast.custom(
           (t: any) => (
             <div className={`${t.visible ? "animate-enter" : "animate-leave"}`}>
-              <NFTMintSuccessToast level={lev} />
+              <NFTMintSuccessToast level={lev-1} />
             </div>
           ),
           {

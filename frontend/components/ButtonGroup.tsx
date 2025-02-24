@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crown, Trophy, Layers, Star } from "lucide-react";
+import { Crown, Trophy, Layers, Star, Target } from "lucide-react";
 
 interface ButtonGroupProps {
   handleNavigation: (path: string) => void;
@@ -9,6 +9,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ handleNavigation }) => {
   const [isLeaderboardHovered, setIsLeaderboardHovered] = useState(false);
   const [isNftsHovered, setIsNftsHovered] = useState(false);
   const [isRentHovered, setIsRentHovered] = useState(false);
+  const [isTournamentsHovered, setIsTournamentsHovered] = useState(false);
 
   return (
     <div className="flex flex-wrap justify-center gap-6">
@@ -106,6 +107,39 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ handleNavigation }) => {
         <div className="flex items-center justify-center space-x-3">
           <Star className={`w-6 h-6 text-white ${isRentHovered ? "animate-bounce" : ""}`} />
           <span className="text-white font-bold text-xl">Rent Level NFT</span>
+        </div>
+      </button>
+
+      {/* Tournaments Button */}
+      <button
+        onClick={() => handleNavigation("/tournament")}
+        onMouseEnter={() => setIsTournamentsHovered(true)}
+        onMouseLeave={() => setIsTournamentsHovered(false)}
+        className={`
+          relative 
+          group 
+          px-8 
+          py-4 
+          bg-gradient-to-r 
+          from-purple-500 
+          via-purple-600 
+          to-purple-500 
+          rounded-xl 
+          shadow-lg 
+          transform 
+          hover:scale-105 
+          transition-all 
+          duration-300
+          border-4 
+          border-purple-700
+          hover:border-purple-600
+          ${isTournamentsHovered ? "animate-pulse" : ""}
+        `}
+      >
+        <div className="flex items-center justify-center space-x-3">
+          <Target className={`w-6 h-6 text-white ${isTournamentsHovered ? "animate-bounce" : ""}`} />
+          <span className="text-white font-bold text-xl">Tournaments</span>
+          <Trophy className={`w-6 h-6 text-white ${isTournamentsHovered ? "animate-bounce" : ""}`} />
         </div>
       </button>
     </div>
