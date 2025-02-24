@@ -58,7 +58,7 @@ router.post("/message", async (req, res) => {
     }
     let gameUser = await Game.findOne({ username: publicKey });
     if (!gameUser) {
-      return res.status(404).json({ error: "User not found!" });
+      return res.status(404).json({ error: `${publicKey} User not found!` });
     }
     console.log(score, gameUser.score);
     gameUser.score += 1;
