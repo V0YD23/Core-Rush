@@ -375,7 +375,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         }),
       });
 
-      if (!gameEndResponse.ok) throw new Error("Failed to fetch proof");
+      if (!gameEndResponse.ok) throw new Error("Failed to End Game");
 
       // Dismiss the pending toast
       toast.dismiss();
@@ -497,8 +497,11 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   };
 
   // Function to handle game navigation
-  const handlePlayGame = () => {
-    router.push("/game/Game.html"); // Replace with your actual game route
+  const handlePlayGame = async () => {
+    const resp = await fetch(`${api}/current-level?publicKey=${address}`)
+    const temp = await resp.json()
+    const lev = temp.level
+    router.push(`/game/level_${lev}/Game.html?publicKey=${address}`); // Replace with your actual game route
   };
   return (
     <>
