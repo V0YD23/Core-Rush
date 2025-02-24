@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const Game = require("../database/models/game"); // Assuming you have a Game model
-
+const User = require("../database/models/user")
 // Coin Collection Route
-router.post("/api/coin-collection", (req, res) => {
+router.post("/coin-collection", (req, res) => {
   const coinData = req.body;
   console.log("Received coin collection data:", coinData);
   res.status(200).send({ message: "Data received successfully" });
 });
 
 // Get User Score Route
-router.get("/api/message", async (req, res) => {
+router.get("/message", async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
 
   const { publicKey } = req.query;
@@ -30,7 +30,7 @@ router.get("/api/message", async (req, res) => {
 });
 
 // Reset User Score Route
-router.post("/api/reset-score", async (req, res) => {
+router.post("/reset-score", async (req, res) => {
   const { publicKey } = req.body;
   try {
     if (!publicKey) {
@@ -50,7 +50,7 @@ router.post("/api/reset-score", async (req, res) => {
 });
 
 // Update User Score Route
-router.post("/api/message", async (req, res) => {
+router.post("/message", async (req, res) => {
   const { score, publicKey } = req.body;
   try {
     if (!publicKey) {
@@ -72,7 +72,7 @@ router.post("/api/message", async (req, res) => {
   }
 });
 
-router.get("/api/leaderboard", async (req, res) => {
+router.get("/leaderboard", async (req, res) => {
   try {
     const users = await User.aggregate([
       {

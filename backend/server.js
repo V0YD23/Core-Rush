@@ -6,6 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 5000; // Use Render’s assigned port
 const oceanRoutes = require("./routes/oceanRoutes"); // Import ocean routes
 const userRoutes = require("./routes/userRoutes"); // Import user routes
+const gameRoutes = require("./routes/gameRoutes")
 const {
   getCorePrice,
   generateTournamentMetadata,

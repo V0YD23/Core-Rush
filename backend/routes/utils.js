@@ -1,4 +1,4 @@
-const fetch = require("node-fetch");
+const axios = require("axios");
 const User = require("../database/models/user"); // Import User model if needed
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY; // Store API key securely
 
@@ -6,20 +6,20 @@ const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY; // Store API ke
 const getCorePrice = async (req, res) => {
   try {
     const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=CORE`;
-    const response = await fetch(url, {
-      method: "GET",
+    
+    const { data } = await axios.get(url, {
       headers: {
         "X-CMC_PRO_API_KEY": COINMARKETCAP_API_KEY,
       },
     });
 
-    const data = await response.json();
-    if (data && data.data && data.data.CORE) {
+    if (data?.data?.CORE?.quote?.USD?.price) {
       res.json({ price: data.data.CORE.quote.USD.price });
     } else {
       res.status(400).json({ error: "Invalid API response" });
     }
   } catch (error) {
+    console.error("Error fetching CORE price:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to fetch price" });
   }
 };
@@ -33,15 +33,7 @@ const generateTournamentMetadata = async (req, res) => {
     }
 
     const temp = latest_cleared_level;
-    let Type = "";
-
-    if (temp < 10) {
-      Type = "Ocean Warrior";
-    } else if (temp >= 10 && temp < 15) {
-      Type = "Storm Bringer";
-    } else if (temp >= 15 && temp < 20) {
-      Type = "Azure Legend";
-    }
+    let Type = temp < 10 ? "Ocean Warrior" : temp < 15 ? "Storm Bringer" : "Azure Legend";
 
     const metadata = {
       name: `BattleKey NFT - Type ${Type}`,
@@ -56,7 +48,7 @@ const generateTournamentMetadata = async (req, res) => {
     console.log("Generated Metadata:", metadata);
     res.status(200).json({ metadata });
   } catch (error) {
-    console.error("Error generating metadata:", error);
+    console.error("Error generating metadata:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -87,7 +79,7 @@ const generateMetadataNFT = async (req, res) => {
     console.log("Generated Metadata:", metadata);
     res.status(200).json({ metadata });
   } catch (error) {
-    console.error("Error generating metadata:", error);
+    console.error("Error generating metadata:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
