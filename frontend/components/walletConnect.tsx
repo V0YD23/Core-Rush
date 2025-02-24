@@ -1,46 +1,19 @@
 "use client";
 import React from "react";
-import axios from "axios";
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { Toaster, toast } from "react-hot-toast";
-import { BrowserProvider } from "ethers";
 import { Contract } from "ethers";
-import { contractABI } from "../abi/core.js";
-import { NFT } from "../abi/nft.js";
 import StakeInterface from "../components/stakeInterface";
 import NFTMintPopup from "../components/nft";
-import { Trophy, CheckCircle2 } from "lucide-react";
-const STAKING_CONTRACT_ABI = contractABI;
-const STAKING_CONTRACT_ADDRESS:string = process.env.NEXT_PUBLIC_STAKING_ADDRESS || "";;
 import { Star, Coins, Heart } from "lucide-react";
-const NFT_CONTRACT_ABI = NFT;
-const NFT_CONTRACT_ADDRESS: string = process.env.NEXT_PUBLIC_NFT_ADDRESS || "";
-import {
-  Loader2,
-  Wallet,
-  Gamepad,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  AlertCircle,
-} from "lucide-react";
+import { useWallet } from "@/hooks/useWallet";
+import { uploadToIPFS } from "@/utils/ipfsUpload";
+import CollectCoins from "./collectCoins";
+import { Loader2, Gamepad, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { connect } from "http2";
-interface WalletConnectProps {
-  provider: BrowserProvider | undefined;
-  setProvider: React.Dispatch<
-    React.SetStateAction<BrowserProvider | undefined>
-  >;
-  address: string;
-  setAddress: React.Dispatch<React.SetStateAction<string>>;
-  isLoading: boolean;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  error: string;
-  setError: React.Dispatch<React.SetStateAction<string>>;
-  stakeAmount: string;
-  setStakeAmount: React.Dispatch<React.SetStateAction<string>>;
-}
-
+import { WalletConnectProps } from "@/interfaces/walletConnect.js";
+import { WithdrawSuccessToast, NFTMintSuccessToast } from "./SuccessToast";
 const WalletConnect: React.FC<WalletConnectProps> = ({
   provider,
   setProvider,
@@ -53,12 +26,16 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   stakeAmount,
   setStakeAmount,
 }) => {
+  const [estimatedProfit, setEstimatedProfit] = useState<number>(0);
+  const [contract, setContract] = useState<Contract>();
+  const [isCalculatingProfit, setIsCalculatingProfit] = useState(false);
+  const [nftContract, setNftContract] = useState<Contract>();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [currentLevel, setCurrentLevel] = useState(1);
   const [gameScore, setgameScore] = useState(
     () =>
       (typeof window !== "undefined" && localStorage.getItem("gameScore")) || ""
   );
-  const [estimatedProfit, setEstimatedProfit] = useState<number>(0);
-  const [isCalculatingProfit, setIsCalculatingProfit] = useState(false);
   const [expectedScore, setExpectedScore] = useState(
     () =>
       (typeof window !== "undefined" &&
@@ -70,9 +47,6 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       (typeof window !== "undefined" && localStorage.getItem("isStaked")) ===
       "true"
   );
-  const [nftContract, setNftContract] = useState<Contract>();
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [currentLevel, setCurrentLevel] = useState(1);
   const [stakedBalance, setStakedBalance] = useState(
     () =>
       (typeof window !== "undefined" &&
@@ -80,40 +54,8 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       "0"
   );
 
-  const [contract, setContract] = useState<Contract>();
   const api = process.env.NEXT_PUBLIC_BACKEND_API;
   const router = useRouter();
-
-  // Custom Toast Components
-  const WithdrawSuccessToast = ({ amount }: any) => (
-    <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-green-500/90 to-green-600/90 rounded-xl border-2 border-green-400 shadow-lg backdrop-blur-sm">
-      <div className="flex-shrink-0">
-        <Coins className="w-6 h-6 text-yellow-300 animate-bounce" />
-      </div>
-      <div className="flex-1">
-        <p className="font-bold text-white">Coins Collected!</p>
-        <p className="text-sm text-green-100">
-          {amount} ETH withdrawn successfully
-        </p>
-      </div>
-      <CheckCircle2 className="w-5 h-5 text-green-200 animate-pulse" />
-    </div>
-  );
-
-  const NFTMintSuccessToast = ({ level }: any) => (
-    <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500/90 to-purple-600/90 rounded-xl border-2 border-blue-400 shadow-lg backdrop-blur-sm">
-      <div className="flex-shrink-0">
-        <Trophy className="w-6 h-6 text-yellow-300 animate-float" />
-      </div>
-      <div className="flex-1">
-        <p className="font-bold text-white">NFT Minted!</p>
-        <p className="text-sm text-blue-100">
-          Level {level} achievement unlocked
-        </p>
-      </div>
-      <CheckCircle2 className="w-5 h-5 text-blue-200 animate-pulse" />
-    </div>
-  );
 
   // Effect to calculate profit when stake amount or score changes
   useEffect(() => {
@@ -133,6 +75,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
   // 🔹 Load `address` from localStorage on component mount
   useEffect(() => {
+    console.log(isLoading);
     const storedAddress = localStorage.getItem("address");
     if (storedAddress) {
       setAddress(storedAddress);
@@ -222,50 +165,6 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     }
   };
 
-  const connectWallet = async () => {
-    if (typeof window.ethereum !== "undefined") {
-      try {
-        setIsLoading(true);
-        const ethProvider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await ethProvider.getSigner();
-        const userAddress = await signer.getAddress();
-
-        setAddress(userAddress);
-        setProvider(ethProvider);
-
-        const stakingContract = new ethers.Contract(
-          STAKING_CONTRACT_ADDRESS,
-          STAKING_CONTRACT_ABI,
-          signer
-        );
-        setContract(stakingContract);
-
-        const nftContract = new ethers.Contract(
-          NFT_CONTRACT_ADDRESS,
-          NFT_CONTRACT_ABI,
-          signer
-        );
-        setNftContract(nftContract);
-
-        await fetchStakedBalance(stakingContract, userAddress);
-
-        const response = await fetch(`${api}/create-user`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ publicKey: userAddress }),
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch proof");
-      } catch (error) {
-        setError("Connection failed: " + (error as Error).message);
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      setError("MetaMask is not installed.");
-    }
-  };
-
   const fetchStakedBalance = async (
     contractInstance: ethers.Contract,
     userAddress: string
@@ -291,7 +190,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     }
     console.log("Expected Score :", expectedScore);
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       setError("");
 
       const tx = await contract.stake(expectedScore, {
@@ -308,11 +207,9 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     } catch (error) {
       setError("Staking failed: " + (error as Error).message);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
-
-
 
   // Enhanced withdraw function
   const handleWithdraw = async () => {
@@ -322,7 +219,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     }
 
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       setError("");
 
       // Show pending toast
@@ -342,35 +239,38 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         }
       );
 
-      const targetScore = await contract.getTargetSet(address);
+      const response = await fetch(
+        `${api}/api/message?publicKey=${encodeURIComponent(address)}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
-      const response = await fetch(`${api}/generate-proof`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ finalScore: Number(gameScore) }),
-      });
+      const data = await response.json();
+      const score = data.score;
+      setgameScore(score);
+      console.log(score);
 
-      if (!response.ok) throw new Error("Failed to fetch proof");
-      const { calldata } = await response.json();
-      const [a, b, c, input] = calldata;
-
-      const tx = await contract.withdraw(a, b, c, input);
+      const tx = await contract.withdraw(score);
       await tx.wait();
 
-      const wonLastGame = await contract.getLatestGame(address);
-      const gameWon = wonLastGame ? 1 : 0;
+      // const wonLastGame = await contract.getLatestGame(address);
+      // const gameWon = wonLastGame ? 1 : 0;
+      const gameWon = 1;
+      console.log(score, gameWon, address);
 
-      const gameEndResponse = await fetch(`${api}/game-end`, {
+      const gameEndResponse = await fetch(`${api}/api/User/game-end`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          score: Number(gameScore),
+          score: score,
           won: gameWon,
           publicKey: address,
         }),
       });
 
-      if (!gameEndResponse.ok) throw new Error("Failed to fetch proof");
+      if (!gameEndResponse.ok) throw new Error("Failed to End Game");
 
       // Dismiss the pending toast
       toast.dismiss();
@@ -379,7 +279,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       toast.custom(
         (t: any) => (
           <div className={`${t.visible ? "animate-enter" : "animate-leave"}`}>
-            <WithdrawSuccessToast amount={gameScore} />
+            <WithdrawSuccessToast amount={score} />
           </div>
         ),
         {
@@ -388,18 +288,20 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       );
 
       if (gameWon) {
-
-        const resp = await fetch(`https://localhost:8443/current-level?publicKey=${address}`)
-        const temp = await resp.json()
-        const lev = temp.level
-        console.log("level "+lev)
-        setCurrentLevel(lev)
-
+        const resp = await fetch(`${api}/api/User/current-level?publicKey=${address}`);
+        const temp = await resp.json();
+        const lev = temp.level;
+        console.log("level " + lev);
+        setCurrentLevel(lev);
 
         const response = await fetch(`${api}/generate-metadata-nft`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ publicKey: address, score: gameScore,level:lev }),
+          body: JSON.stringify({
+            publicKey: address,
+            score: score,
+            level: lev,
+          }),
         });
 
         if (!response.ok) throw new Error("Failed to generate metadata");
@@ -414,11 +316,16 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         setgameScore("");
         setIsStaked(false);
 
-
-
-
         const tx = await nftContract?.mintLevelNFT(address, lev, hash);
         await tx.wait();
+
+        const res = await fetch(`${api}/api/reset-score`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ publicKey: address }),
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch proof");
 
         // Show NFT mint success toast
         toast.custom(
@@ -452,40 +359,27 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
       );
       setError("Withdrawal failed: " + (error as Error).message);
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const uploadToIPFS = async (metadata: any) => {
-    try {
-      const url = "https://api.pinata.cloud/pinning/pinJSONToIPFS"; // Use pinJSONToIPFS for metadata
-
-      const response = await axios.post(url, metadata, {
-        headers: {
-          "Content-Type": "application/json",
-          pinata_api_key: "30822c42812cd6ea5b8c",
-          pinata_secret_api_key:
-            "efa8ce1324868fbe358863c37069edb9542087a67df7ddaf6b61ca10a232081b",
-        },
-      });
-
-      // Get IPFS hash (CID)
-      const ipfsHash = response.data.IpfsHash;
-      console.log(`✅ Metadata uploaded! IPFS Hash: ${ipfsHash}`);
-      return `ipfs://${ipfsHash}`; // Return IPFS URL
-    } catch (error: any) {
-      console.error(
-        "❌ Error uploading metadata to IPFS:",
-        error.response ? error.response.data : error.message
-      );
-      return null;
+      // setIsLoading(false);
     }
   };
 
   // Function to handle game navigation
-  const handlePlayGame = () => {
-    router.push("/game/Game.html"); // Replace with your actual game route
+  const handlePlayGame = async () => {
+    const resp = await fetch(`${api}/current-level?publicKey=${address}`);
+    const temp = await resp.json();
+    const lev = temp.level;
+    router.push(`/game/level_${lev}/Game.html?publicKey=${address}`); // Replace with your actual game route
   };
+  const { connectWallet } = useWallet(
+    setAddress,
+    setProvider,
+    setContract,
+    setNftContract,
+    fetchStakedBalance,
+    api,
+    setError
+  );
+
   return (
     <>
       <Toaster
@@ -635,35 +529,13 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
             )}
 
             {/* Withdraw Section */}
-            <div className="bg-white/90 rounded-xl p-6 border-4 border-red-400 shadow-lg space-y-4">
-              <label className="text-sm font-bold text-blue-700">
-                Collect Coins
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  value={gameScore}
-                  onChange={(e) => setgameScore(e.target.value)}
-                  placeholder="Amount in ETH"
-                  className="flex-1 px-4 py-3 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-200 transition-all text-blue-700"
-                  min="0"
-                  step="0.01"
-                  max={stakedBalance}
-                />
-                <button
-                  onClick={handleWithdraw}
-                  disabled={isLoading || !gameScore || Number(gameScore) <= 0}
-                  className="px-6 py-3 bg-yellow-400 hover:bg-yellow-300 rounded-xl font-bold text-yellow-900 shadow-lg transition-all duration-200 flex items-center gap-2 border-b-4 border-yellow-500 hover:border-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed active:border-b-0 transform active:translate-y-1"
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Coins className="w-5 h-5" />
-                  )}
-                  Collect
-                </button>
-              </div>
-            </div>
+            <CollectCoins
+              gameScore={gameScore}
+              setGameScore={setgameScore}
+              handleWithdraw={handleWithdraw}
+              isLoading={isLoading}
+              stakedBalance={stakedBalance}
+            />
 
             {/* Error Display */}
             {error && (
