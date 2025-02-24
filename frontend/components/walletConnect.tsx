@@ -315,6 +315,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
         await fetchStakedBalance(contract, address);
         setgameScore("");
         setIsStaked(false);
+        setStakeAmount("");
 
         const tx = await nftContract?.mintLevelNFT(address, lev, hash);
         await tx.wait();
@@ -365,9 +366,10 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
   // Function to handle game navigation
   const handlePlayGame = async () => {
-    const resp = await fetch(`${api}/current-level?publicKey=${address}`);
+    const resp = await fetch(`${api}/api/User/current-level?publicKey=${address}`);
     const temp = await resp.json();
     const lev = temp.level;
+    console.log("cliecke")
     router.push(`/game/level_${lev}/Game.html?publicKey=${address}`); // Replace with your actual game route
   };
   const { connectWallet } = useWallet(
