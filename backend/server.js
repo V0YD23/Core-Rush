@@ -376,42 +376,42 @@ app.post("/generate-metadata-nft", async (req, res) => {
   }
 });
 
-app.post("/generate-proof", async (req, res) => {
-  try {
-    const { finalScore } = req.body;
+// app.post("/generate-proof", async (req, res) => {
+//   try {
+//     const { finalScore } = req.body;
 
-    // Ensure score is in the correct format
-    if (typeof finalScore !== "number") {
-      return res.status(400).json({ error: "Invalid finalScore" });
-    }
+//     // Ensure score is in the correct format
+//     if (typeof finalScore !== "number") {
+//       return res.status(400).json({ error: "Invalid finalScore" });
+//     }
 
-    // Load the WebAssembly and witness calculator
-    const wasmPath = "builds/game_js/game.wasm";
-    const zkeyPath = "builds/game.zkey";
-    const input = { finalScore };
+//     // Load the WebAssembly and witness calculator
+//     const wasmPath = "builds/game_js/game.wasm";
+//     const zkeyPath = "builds/game.zkey";
+//     const input = { finalScore };
 
-    // Generate witness
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
-      input,
-      wasmPath,
-      zkeyPath
-    );
-    const calldata = await snarkjs.groth16.exportSolidityCallData(
-      proof,
-      publicSignals
-    );
-    console.log("Calldata:", calldata);
+//     // Generate witness
+//     const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+//       input,
+//       wasmPath,
+//       zkeyPath
+//     );
+//     const calldata = await snarkjs.groth16.exportSolidityCallData(
+//       proof,
+//       publicSignals
+//     );
+//     console.log("Calldata:", calldata);
 
-    // ✅ Convert the string into an actual JavaScript array
-    const parsedCalldata = JSON.parse(`[${calldata}]`); // Ensures proper formatting
+//     // ✅ Convert the string into an actual JavaScript array
+//     const parsedCalldata = JSON.parse(`[${calldata}]`); // Ensures proper formatting
 
-    // ✅ Now send the structured array to the frontend
-    res.json({ calldata: parsedCalldata });
-  } catch (error) {
-    console.error("Error generating proof:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+//     // ✅ Now send the structured array to the frontend
+//     res.json({ calldata: parsedCalldata });
+//   } catch (error) {
+//     console.error("Error generating proof:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 app.get("/api/Ocean/leaderboard", async (req, res) => {
   try {
