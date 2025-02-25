@@ -337,7 +337,7 @@ export default function MyNFTs() {
                     {/* Action Button */}
                     <button
                       onClick={() => openRentModal(nft)}
-                      className={`w-full mt-5 ${rarityColor.replace(
+                      className={`w-full mt-5 bg-blue-500 ${rarityColor.replace(
                         "text-",
                         "bg-"
                       )} hover:bg-opacity-80 py-3 px-4 rounded-lg transition-all duration-300 text-sm font-bold shadow-lg text-white`}

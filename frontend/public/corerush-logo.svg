@@ -37,10 +37,16 @@
   </g>
   
   <!-- Slogan -->
-  <text x="200" y="220" font-family="Arial, sans-serif" font-size="16" fill="#FFFFFF" text-anchor="middle" font-weight="bold">
-    Collect, Compete, Conquer!
+  <!-- <text x="130" y="220" font-family="Arial, sans-serif" font-size="16" fill="#001F3F" font-weight="bold">
+    Collect,
   </text>
-  
+  <text x="200" y="220" font-family="Arial, sans-serif" font-size="16" fill="#001F3F" font-weight="bold">
+    Compete,
+  </text>
+  <text x="270" y="220" font-family="Arial, sans-serif" font-size="16" fill="#001F3F" font-weight="bold">
+    Conquer!
+  </text> -->
+
   <!-- Decorative Elements -->
   <g transform="translate(100,150)">
     <path d="M-10,-10 L10,10 M-10,10 L10,-10" stroke="#4A90E2" stroke-width="3" opacity="0.5"/>
