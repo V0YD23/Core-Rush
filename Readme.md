@@ -5,6 +5,11 @@
 ## Introduction
 Welcome to **CORErush**, an exciting Mario-style game where players can stake their **CORE tokens**, predict their expected score, and win bonuses based on their performance. Test your skills, challenge yourself, and earn rewards by achieving your predicted score!
 
+## Architecture
+
+![Architeture 1](./archi1.png)
+![Architecture 2](./archi2.png)
+
 ## How It Works
 1. **Stake CORE Tokens**: Players must stake a certain amount of **CORE tokens** before starting the game.
 2. **Set an Expected Score**: Players enter their target score before playing.
