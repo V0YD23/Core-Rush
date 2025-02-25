@@ -1,18 +1,29 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles, Trophy, Shield, Sword, Crown, Star, Flame, Zap, Gamepad,
-  HeartPulse, Brain, Wind
+  Sparkles,
+  Trophy,
+  Shield,
+  Sword,
+  Crown,
+  Star,
+  Flame,
+  Zap,
+  Gamepad,
+  HeartPulse,
+  Brain,
+  Wind,
 } from "lucide-react";
 import { ethers, BrowserProvider } from "ethers";
-import {Warrior_Clash_NFT} from "@/abi/warrior_clash_nft"
-import {Warrior_Clash_Logic} from "@/abi/warrior_clash_logic"
-import {Arcane_Master_NFT} from "@/abi/arcane_master_nft"
-import {Arcane_Master_Logic} from "@/abi/arcane_master_logic"
-import {Super_Showdown_NFT} from "@/abi/super_showdown_nft"
-import {Super_Showdown_Logic} from "@/abi/super_showdown_logic"
+import { Warrior_Clash_NFT } from "@/abi/warrior_clash_nft";
+import { Warrior_Clash_Logic } from "@/abi/warrior_clash_logic";
+import { Arcane_Master_NFT } from "@/abi/arcane_master_nft";
+import { Arcane_Master_Logic } from "@/abi/arcane_master_logic";
+import { Super_Showdown_NFT } from "@/abi/super_showdown_nft";
+import { Super_Showdown_Logic } from "@/abi/super_showdown_logic";
 
 const ParticleEffect = () => {
   return (
@@ -63,31 +74,37 @@ const PowerMeter = ({ power = 75 }) => {
   );
 };
 
-const WARRIOR_CLASH_NFT_ADDRESS:string = process.env.NEXT_PUBLIC_WARRIOR_CLASH_NFT_ADDRESS || "";
-const WARRIOR_CLASH_LOGIC_ADDRESS = process.env.NEXT_PUBLIC_WARRIOR_CLASH_LOGIC_ADDRESS;
+const WARRIOR_CLASH_NFT_ADDRESS: string =
+  process.env.NEXT_PUBLIC_WARRIOR_CLASH_NFT_ADDRESS || "";
+const WARRIOR_CLASH_LOGIC_ADDRESS =
+  process.env.NEXT_PUBLIC_WARRIOR_CLASH_LOGIC_ADDRESS;
 
-const ARCANE_MASTER_NFT_ADDRESS:string = process.env.NEXT_PUBLIC_ARCANE_MASTER_NFT_ADDRESS || "";
-const ARCANE_MASTER_LOGIC_ADDRESS = process.env.NEXT_PUBLIC_ARCANE_MASTER_LOGIC_ADDRESS;
+const ARCANE_MASTER_NFT_ADDRESS: string =
+  process.env.NEXT_PUBLIC_ARCANE_MASTER_NFT_ADDRESS || "";
+const ARCANE_MASTER_LOGIC_ADDRESS =
+  process.env.NEXT_PUBLIC_ARCANE_MASTER_LOGIC_ADDRESS;
 
-const SUPER_SHOWDOWN_NFT_ADDRESS:string = process.env.NEXT_PUBLIC_SUPER_SHOWDOWN_NFT_ADDRESS || "";
-const SUPER_SHOWDOWN_LOGIC_ADDRESS = process.env.NEXT_PUBLIC_SUPER_SHOWDOWN_LOGIC_ADDRESS;
+const SUPER_SHOWDOWN_NFT_ADDRESS: string =
+  process.env.NEXT_PUBLIC_SUPER_SHOWDOWN_NFT_ADDRESS || "";
+const SUPER_SHOWDOWN_LOGIC_ADDRESS =
+  process.env.NEXT_PUBLIC_SUPER_SHOWDOWN_LOGIC_ADDRESS;
 
 const TournamentLanding = () => {
   const api = process.env.NEXT_PUBLIC_BACKEND_API;
   const [hoveredTier, setHoveredTier] = useState("");
   const [loading, setLoading] = useState(true);
-  const [provider,setProvider] = useState<BrowserProvider>()
+  const [provider, setProvider] = useState<BrowserProvider>();
   const [account, setAccount] = useState<string | null>(null);
 
   const buttonVariants = {
     initial: { scale: 1 },
     hover: {
       scale: 1.1,
-      transition: { 
+      transition: {
         duration: 0.2,
-        yoyo: Infinity
-      }
-    }
+        yoyo: Infinity,
+      },
+    },
   };
 
   const heroVariants = {
@@ -95,8 +112,8 @@ const TournamentLanding = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5 }
-    }
+      transition: { duration: 0.5 },
+    },
   };
 
   const characters = {
@@ -108,10 +125,11 @@ const TournamentLanding = () => {
         health: 90,
         attack: 85,
         defense: 75,
-        speed: 50
+        speed: 50,
       },
       color: "bg-red-600",
-      buttonColor: "bg-red-500 hover:bg-red-400"
+      buttonColor: "bg-red-500 hover:bg-red-400",
+      url: "/warrior_clash",
     },
     mage: {
       title: "ARCANE MASTER",
@@ -121,10 +139,11 @@ const TournamentLanding = () => {
         health: 60,
         attack: 90,
         defense: 40,
-        speed: 70
+        speed: 70,
       },
       color: "bg-purple-600",
-      buttonColor: "bg-purple-500 hover:bg-purple-400"
+      buttonColor: "bg-purple-500 hover:bg-purple-400",
+      url: "/arcane_master",
     },
     rogue: {
       title: "SUPER SHOWDOWN",
@@ -134,19 +153,20 @@ const TournamentLanding = () => {
         health: 70,
         attack: 75,
         defense: 50,
-        speed: 90
+        speed: 90,
       },
       color: "bg-green-600",
-      buttonColor: "bg-green-500 hover:bg-green-400"
-    }
+      buttonColor: "bg-green-500 hover:bg-green-400",
+      url: "/super_showdown",
+    },
   };
 
-  const scrollToSection = (sectionId:string) => {
+  const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
       });
     }
   };
@@ -169,56 +189,62 @@ const TournamentLanding = () => {
       setProvider(provider);
     } catch (error) {
       console.error("Error fetching available Account:", error);
-    }   
+    }
   }
 
   const ClaimNFT = async () => {
     try {
-      const resp = await fetch(`${api}/api/User/current-level?publicKey=${account}`);
+      const resp = await fetch(
+        `${api}/api/User/current-level?publicKey=${account}`
+      );
       const temp = await resp.json();
       const lev = temp.level;
-  
+
       const response = await fetch(`${api}/generate-tournament-metadata`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ publicKey: account, latest_cleared_level: lev }),
       });
-  
+
       if (!response.ok) throw new Error("Failed to generate metadata");
       const { metadata } = await response.json();
-  
-      if (!metadata || metadata.length === 0) throw new Error("No new metadata to mint");
-  
+
+      if (!metadata || metadata.length === 0)
+        throw new Error("No new metadata to mint");
+
       const signer = await provider?.getSigner();
-  
+
       // Initialize Contracts
       const Warrior_Clash_NFT_Contract = new ethers.Contract(
         WARRIOR_CLASH_NFT_ADDRESS,
         Warrior_Clash_NFT,
         signer
       );
-  
+
       const Arcane_Master_NFT_Contract = new ethers.Contract(
         ARCANE_MASTER_NFT_ADDRESS,
         Arcane_Master_NFT,
         signer
       );
-  
+
       const Super_Showdown_NFT_Contract = new ethers.Contract(
         SUPER_SHOWDOWN_NFT_ADDRESS,
         Super_Showdown_NFT,
         signer
       );
-  
+
       // Upload metadata to IPFS and mint NFTs
       for (const item of metadata) {
         const uploadedHash = await uploadToIPFS(item);
-        if (!uploadedHash) throw new Error(`Failed to upload ${item.name} metadata to IPFS`);
-  
+        if (!uploadedHash)
+          throw new Error(`Failed to upload ${item.name} metadata to IPFS`);
+
         let contract;
-  
+
         // Choose the right contract based on the NFT type
-        switch (item.attributes.find((attr:any) => attr.trait_type === "Type").value) {
+        switch (
+          item.attributes.find((attr: any) => attr.trait_type === "Type").value
+        ) {
           case "Warrior Clash":
             contract = Warrior_Clash_NFT_Contract;
             break;
@@ -232,7 +258,7 @@ const TournamentLanding = () => {
             console.warn(`Unknown tournament type for ${item.name}`);
             continue;
         }
-  
+
         // Mint NFT
         const tx = await contract?.mintTournamentNFT(account, uploadedHash);
         await tx.wait();
@@ -242,8 +268,10 @@ const TournamentLanding = () => {
       console.error("Error claiming NFT:", error);
     }
   };
-  
-  const uploadToIPFS = async (metadata:any) => {
+
+  const router = useRouter()
+
+  const uploadToIPFS = async (metadata: any) => {
     try {
       const response = await axios.post(
         "https://api.pinata.cloud/pinning/pinJSONToIPFS",
@@ -252,7 +280,8 @@ const TournamentLanding = () => {
           headers: {
             "Content-Type": "application/json",
             pinata_api_key: "30822c42812cd6ea5b8c",
-            pinata_secret_api_key: "efa8ce1324868fbe358863c37069edb9542087a67df7ddaf6b61ca10a232081b",
+            pinata_secret_api_key:
+              "efa8ce1324868fbe358863c37069edb9542087a67df7ddaf6b61ca10a232081b",
           },
         }
       );
@@ -355,14 +384,12 @@ const TournamentLanding = () => {
                 >
                   <character.icon className="w-16 h-16 text-white mx-auto" />
                 </motion.div>
-
                 <h3 className="text-3xl font-black text-white mb-4">
                   {character.title}
                 </h3>
                 <p className="text-xl text-white mb-6">
                   {character.description}
                 </p>
-
                 <div className="space-y-3 mb-6">
                   {Object.entries(character.stats).map(([stat, value]) => (
                     <div key={stat} className="flex items-center gap-2">
@@ -377,14 +404,15 @@ const TournamentLanding = () => {
                     </div>
                   ))}
                 </div>
-
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => router.push(`/play/${character.url}`)}
                   className={`w-full ${character.buttonColor} text-white font-bold py-4 px-8 rounded-lg text-xl uppercase`}
                 >
                   Play it
                 </motion.button>
+                ;
               </motion.div>
             ))}
           </div>

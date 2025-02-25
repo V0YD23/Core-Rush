@@ -13,7 +13,8 @@ import {
   Play
 } from "lucide-react";
 import { ethers, BrowserProvider, Contract } from "ethers";
-import { Tournament_Logic } from "@/abi/tournament_logic";
+// import { Warrior_Clash_Logic } from "@/abi/warrior_clash_Logic";
+import { Warrior_Clash_Logic } from "@/abi/warrior_clash_logic";
 interface Player {
   _id: string;
   username: string;
@@ -24,8 +25,8 @@ interface Player {
 
 export default function TournamentPage() {
   const api = process.env.NEXT_PUBLIC_BACKEND_API;
-  const tournament_logic_contract: string =
-    process.env.NEXT_PUBLIC_TOURNAMENT_LOGIC_ADDRESS || "";
+  const warrior_clash_Logic_contract: string =
+    process.env.NEXT_PUBLIC_WARRIOR_CLASH_LOGIC_ADDRESS || "";
 
     const [isEndingTournament, setIsEndingTournament] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -99,8 +100,8 @@ export default function TournamentPage() {
         setProvider(browserProvider);
 
         const stakingContract = new ethers.Contract(
-          tournament_logic_contract,
-          Tournament_Logic,
+          warrior_clash_Logic_contract,
+          Warrior_Clash_Logic,
           signer
         );
         setContract(stakingContract);
@@ -152,8 +153,8 @@ export default function TournamentPage() {
         setProvider(browserProvider);
 
         const stakingContract = new ethers.Contract(
-          tournament_logic_contract,
-          Tournament_Logic,
+          warrior_clash_Logic_contract,
+          Warrior_Clash_Logic,
           signer
         );
         setContract(stakingContract);
@@ -187,12 +188,12 @@ export default function TournamentPage() {
 
   const handleStake = async () => {
     try {
-    console.log(tournament_logic_contract)
+    console.log(warrior_clash_Logic_contract)
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
       const stakingContract = new ethers.Contract(
-        tournament_logic_contract,
-        Tournament_Logic,
+        warrior_clash_Logic_contract,
+        Warrior_Clash_Logic,
         signer
       );
 
