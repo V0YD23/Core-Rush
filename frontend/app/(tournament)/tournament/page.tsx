@@ -367,7 +367,7 @@ const TournamentLanding = () => {
             whileInView={{ opacity: 1, y: 0 }}
             className="text-6xl font-black text-center text-white mb-20 uppercase"
           >
-            Select Your Champion
+            Select Your Battle
           </motion.h2>
 
           <div className="grid md:grid-cols-3 gap-8">

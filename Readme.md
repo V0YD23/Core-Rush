@@ -129,3 +129,123 @@ Track the top players in the game from the day it launched until today!
 > **Stay competitive and rise to the top! 🚀**  
 
 ---
+# 🏆 Tournament Mode: The Ultimate Challenge
+
+Welcome to **Tournament Mode**, where the best players battle for glory, exclusive rewards, and a massive prize pool! This high-stakes mode is for **elite competitors** who are ready to prove their skills.
+
+![Tournament Home Page](./tournament_home.png)
+---
+
+# ⚔️ Tournament Types: Choose Your Battlefield!  
+
+Currently, there are **three** thrilling tournament types, each designed for different playstyles.  
+**Which one will you dominate?**  
+
+![Battle Types](./battle_types.png)
+---
+
+## 🛡️ 1. WARRIOR CLASH (For Strength & Endurance)  
+**"CRUSH YOUR ENEMIES WITH BRUTE FORCE!"**  
+
+🏟️ **Gameplay:**  
+- Face off in **intense one-on-one battles** where strength is key.  
+- Survive brutal **last-man-standing** encounters.  
+- **Strategy:** Endurance and powerful attacks will decide the victor!  
+
+🎯 **Enter the Arena:** [Join WARRIOR CLASH ➝](/warrior_clash)  
+
+---
+
+## 🔮 2. ARCANE MASTER (For Magic & Strategy)  
+**"UNLEASH DEVASTATING MAGICAL POWER!"**  
+
+🏟️ **Gameplay:**  
+- Use **high-damage spells** to defeat enemies before they get close.  
+- **Outsmart** your opponents with **tactical movement**.  
+- **Strategy:** **Fast execution** and **precision timing** will determine the winner!  
+
+🎯 **Master the Arcane:** [Join ARCANE MASTER ➝](/arcane_master)  
+
+---
+
+## 🏹 3. SUPER SHOWDOWN (For Speed & Stealth)  
+**"STRIKE FROM THE SHADOWS!"**  
+
+🏟️ **Gameplay:**  
+- **Fast-paced combat** where movement and reflexes are everything.  
+- **Dodge, strike, and disappear**—hit enemies before they react!  
+- **Strategy:** Quick **decision-making and positioning** will lead to victory.  
+
+🎯 **Dominate the Shadows:** [Join SUPER SHOWDOWN ➝](/super_showdown)  
+
+---
+
+## 🏆 Which Tournament Will You Conquer?  
+Each tournament requires **different skills and strategies**.  
+Choose **your path**, claim **your NFT entry**, and **stake your tokens** for victory!  
+
+
+## 🎟️ Entry Requirements: Exclusive NFTs  
+Participation in a tournament is **not free**—it requires a **special NFT**.  
+
+### How do you get these NFTs?  
+- Players **earn tournament NFTs** based on their **progress** in **Normal Mode**.  
+- Different tournaments require **different NFTs**, ensuring **balanced** competition.  
+- Some tournaments may have **unique NFTs** that can be **minted during special events**.  
+
+---
+
+## 💰 Staking Mechanism: Show Your Commitment  
+- Each tournament has its **own token** that players must **stake** to enter.  
+- The total **staked amount** forms the **prize pool** for the tournament.  
+- Staking **adds strategic depth**—only **serious** players join the battle!  
+
+![Staking Console](./warrior_clash_staking_console.png)
+
+---
+
+## 📊 Tournament Format: Compete & Climb the Leaderboard  
+- Players can **participate in an ongoing tournament** **only once** per event.  
+- Their **performance** is recorded on the **Tournament Leaderboard**.  
+- The leaderboard ranks players based on **wins, scores, or other game-specific metrics**.  
+- Unlike normal mode, **every decision counts**—there are **no second chances**!  
+
+---
+
+## 🎯 The Role of the Tournament Owner  
+- Each tournament has an **owner** who can **end the tournament** when it reaches its natural conclusion.  
+- Once a tournament is finished, the **final leaderboard rankings** determine the winners.  
+
+---
+
+## 🏅 Prize Pool Distribution  
+- At the end of the tournament, the **prize pool** is **distributed among top players**.  
+- The higher your **ranking**, the **larger your share** of the pool.  
+- Some tournaments may offer **additional rewards**, such as **rare NFTs** or **special game perks**.  
+
+### Example Prize Distribution (for a 100-token prize pool):
+1. 🥇 **1st Place** - 50% (50 tokens)  
+2. 🥈 **2nd Place** - 30% (30 tokens)  
+3. 🥉 **3rd Place** - 15% (15 tokens)  
+4. 🎖️ **4th-10th Place** - 5% split equally  
+
+---
+
+## 🔥 Why Should You Join Tournament Mode?  
+### ✔ **High-Stakes Action**  
+Unlike normal mode, **every move matters**—only the strongest survive.  
+
+### ✔ **Win Exclusive Rewards**  
+Tournaments give **bigger rewards** and **special items** that **normal mode doesn’t offer**.  
+
+### ✔ **Prestige & Recognition**  
+Top players **cement their legacy** in the game’s history.  
+
+### ✔ **Limited-Edition Tournaments**  
+Some events **only happen once**, making them **highly competitive** and **legendary**.  
+
+---
+
+## 🚀 Are You Ready to Take the Challenge?  
+Gather your **skills**, secure your **NFT entry pass**, and **stake your way** into battle.  
+Only the **best** will rise to the top—**will you be one of them?**  

@@ -302,7 +302,7 @@ export default function TournamentPage() {
           <Trophy className="w-20 h-20 text-yellow-400" />
         </motion.div>
         <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-400 text-transparent bg-clip-text">
-          Aqua Tournament
+          Warrior Clash Tournament
         </h1>
         <p className="text-xl text-cyan-200 max-w-2xl mx-auto mb-8">
           Stake your ETH, climb the leaderboard, and claim legendary rewards in
