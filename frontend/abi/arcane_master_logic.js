@@ -1,4 +1,4 @@
-export const Tournament_Logic = [
+export const Arcane_Master_Logic = [
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",

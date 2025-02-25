@@ -13,7 +13,7 @@ contract TournamentLevelNft is ERC721URIStorage, Ownable {
 
     event NFTminted(address player,uint256 tokenId);
 
-    constructor() ERC721("BattleKey","BTK") Ownable(msg.sender) {
+    constructor() ERC721("SuperShowdown","SSD") Ownable(msg.sender) {
         tokenCounter = 1;
     }
 

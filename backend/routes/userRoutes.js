@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../database/models/user");
 const Game = require("../database/models/game");
-
+const Tournament = require("../database/models/tournament_nft")
 router.post("/create-user", async (req, res) => {
   const { publicKey } = req.body;
   console.log(publicKey);
@@ -18,8 +18,10 @@ router.post("/create-user", async (req, res) => {
 
     user = new User({ username: publicKey });
     let game = new Game({ username: publicKey });
+    let tournament = new Tournament({username:publicKey})
     await user.save();
     await game.save();
+    await tournament.save()
 
     res.status(201).json({ message: "User created successfully!", user });
   } catch (error) {

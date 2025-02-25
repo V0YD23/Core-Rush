@@ -7,7 +7,12 @@ import {
   HeartPulse, Brain, Wind
 } from "lucide-react";
 import { ethers, BrowserProvider } from "ethers";
-import { Tournament_NFT } from "@/abi/tournament_nft.js";
+import {Warrior_Clash_NFT} from "@/abi/warrior_clash_nft"
+import {Warrior_Clash_Logic} from "@/abi/warrior_clash_logic"
+import {Arcane_Master_NFT} from "@/abi/arcane_master_nft"
+import {Arcane_Master_Logic} from "@/abi/arcane_master_logic"
+import {Super_Showdown_NFT} from "@/abi/super_showdown_nft"
+import {Super_Showdown_Logic} from "@/abi/super_showdown_logic"
 
 const ParticleEffect = () => {
   return (
@@ -58,7 +63,14 @@ const PowerMeter = ({ power = 75 }) => {
   );
 };
 
-const tournament_nft = "0xdAf27a5C2F1307f3b5703E63229A2E1346278496";
+const WARRIOR_CLASH_NFT_ADDRESS:string = process.env.NEXT_PUBLIC_WARRIOR_CLASH_NFT_ADDRESS || "";
+const WARRIOR_CLASH_LOGIC_ADDRESS = process.env.NEXT_PUBLIC_WARRIOR_CLASH_LOGIC_ADDRESS;
+
+const ARCANE_MASTER_NFT_ADDRESS:string = process.env.NEXT_PUBLIC_ARCANE_MASTER_NFT_ADDRESS || "";
+const ARCANE_MASTER_LOGIC_ADDRESS = process.env.NEXT_PUBLIC_ARCANE_MASTER_LOGIC_ADDRESS;
+
+const SUPER_SHOWDOWN_NFT_ADDRESS:string = process.env.NEXT_PUBLIC_SUPER_SHOWDOWN_NFT_ADDRESS || "";
+const SUPER_SHOWDOWN_LOGIC_ADDRESS = process.env.NEXT_PUBLIC_SUPER_SHOWDOWN_LOGIC_ADDRESS;
 
 const TournamentLanding = () => {
   const api = process.env.NEXT_PUBLIC_BACKEND_API;
@@ -89,7 +101,7 @@ const TournamentLanding = () => {
 
   const characters = {
     warrior: {
-      title: "MEGA WARRIOR",
+      title: "WARRIOR CLASH",
       description: "CRUSH YOUR ENEMIES WITH BRUTE FORCE!",
       icon: Sword,
       stats: {
@@ -115,7 +127,7 @@ const TournamentLanding = () => {
       buttonColor: "bg-purple-500 hover:bg-purple-400"
     },
     rogue: {
-      title: "SHADOW STRIKER",
+      title: "SUPER SHOWDOWN",
       description: "STRIKE FROM THE SHADOWS!",
       icon: Wind,
       stats: {
@@ -160,37 +172,77 @@ const TournamentLanding = () => {
     }   
   }
 
-  const ClaimNFT = async() => {
+  const ClaimNFT = async () => {
     try {
-      const resp = await fetch(`https://localhost:8443/current-level?publicKey=${account}`);
+      const resp = await fetch(`${api}/api/User/current-level?publicKey=${account}`);
       const temp = await resp.json();
       const lev = temp.level;
-
+  
       const response = await fetch(`${api}/generate-tournament-metadata`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ publicKey: account, latest_cleared_level: lev }),
       });
-
+  
       if (!response.ok) throw new Error("Failed to generate metadata");
       const { metadata } = await response.json();
-      
-      if (!metadata) throw new Error("Received null metadata");
-
-      const hash = await uploadToIPFS(metadata);
-      if (!hash) throw new Error("Failed to upload metadata to IPFS");
-
+  
+      if (!metadata || metadata.length === 0) throw new Error("No new metadata to mint");
+  
       const signer = await provider?.getSigner();
-      const Tournament_NFT_Contract = new ethers.Contract(tournament_nft, Tournament_NFT, signer);
-      
-      const tx = await Tournament_NFT_Contract?.mintTournamentNFT(metadata.attributes[1].value, hash);
-      await tx.wait();
-      console.log("NFT Claimed Successfully!");
+  
+      // Initialize Contracts
+      const Warrior_Clash_NFT_Contract = new ethers.Contract(
+        WARRIOR_CLASH_NFT_ADDRESS,
+        Warrior_Clash_NFT,
+        signer
+      );
+  
+      const Arcane_Master_NFT_Contract = new ethers.Contract(
+        ARCANE_MASTER_NFT_ADDRESS,
+        Arcane_Master_NFT,
+        signer
+      );
+  
+      const Super_Showdown_NFT_Contract = new ethers.Contract(
+        SUPER_SHOWDOWN_NFT_ADDRESS,
+        Super_Showdown_NFT,
+        signer
+      );
+  
+      // Upload metadata to IPFS and mint NFTs
+      for (const item of metadata) {
+        const uploadedHash = await uploadToIPFS(item);
+        if (!uploadedHash) throw new Error(`Failed to upload ${item.name} metadata to IPFS`);
+  
+        let contract;
+  
+        // Choose the right contract based on the NFT type
+        switch (item.attributes.find((attr:any) => attr.trait_type === "Type").value) {
+          case "Warrior Clash":
+            contract = Warrior_Clash_NFT_Contract;
+            break;
+          case "Arcane Master":
+            contract = Arcane_Master_NFT_Contract;
+            break;
+          case "Super Showdown":
+            contract = Super_Showdown_NFT_Contract;
+            break;
+          default:
+            console.warn(`Unknown tournament type for ${item.name}`);
+            continue;
+        }
+  
+        // Mint NFT
+        const tx = await contract?.mintTournamentNFT(account, uploadedHash);
+        await tx.wait();
+        console.log(`${item.name} NFT Claimed Successfully!`);
+      }
     } catch (error) {
       console.error("Error claiming NFT:", error);
     }
   };
-
+  
   const uploadToIPFS = async (metadata:any) => {
     try {
       const response = await axios.post(
@@ -256,7 +308,7 @@ const TournamentLanding = () => {
                 onClick={() => scrollToSection("characters")}
                 className="px-8 py-4 bg-red-500 rounded-lg text-white font-bold text-2xl uppercase border-b-4 border-red-700"
               >
-                Choose Your Champion
+                Choose Your Battle Type
               </motion.button>
 
               <motion.button
@@ -331,7 +383,7 @@ const TournamentLanding = () => {
                   whileTap={{ scale: 0.95 }}
                   className={`w-full ${character.buttonColor} text-white font-bold py-4 px-8 rounded-lg text-xl uppercase`}
                 >
-                  Select Champion
+                  Play it
                 </motion.button>
               </motion.div>
             ))}
