@@ -1,6 +1,6 @@
 # CORErush - A Super Stake Bros Game
 
-![Local Image](./logo.png)
+![Local Image](./logos.png)
 
 ## Introduction
 Welcome to **CORErush**, an exciting Mario-style game where players can stake their **CORE tokens**, predict their expected score, and win bonuses based on their performance. Test your skills, challenge yourself, and earn rewards by achieving your predicted score!

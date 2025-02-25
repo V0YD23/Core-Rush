@@ -21,31 +21,18 @@
     RUSH
   </text>
   
-  <!-- Jumping Coin -->
-  <g transform="translate(280,130)">
-    <circle cx="0" cy="0" r="15" fill="#FFD700" stroke="#B8860B" stroke-width="3">
-      <animate attributeName="cy" values="0;-20;0" dur="1s" repeatCount="indefinite"/>
-    </circle>
-    <text x="0" y="5" font-family="Arial, sans-serif" font-size="16" fill="#B8860B" text-anchor="middle" font-weight="bold">¢</text>
-  </g>
-  
+  <!-- Image instead of jumping coin -->
+<!-- Image below "RUSH" -->
+<g transform="translate(160,170)">
+    <image href="core-removebg-preview.png" width="80" height="80"/>
+</g>
+
   <!-- Blockchain Dots -->
   <g transform="translate(120,130)">
     <circle cx="0" cy="0" r="5" fill="#4A90E2">
       <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
     </circle>
   </g>
-  
-  <!-- Slogan -->
-  <!-- <text x="130" y="220" font-family="Arial, sans-serif" font-size="16" fill="#001F3F" font-weight="bold">
-    Collect,
-  </text>
-  <text x="200" y="220" font-family="Arial, sans-serif" font-size="16" fill="#001F3F" font-weight="bold">
-    Compete,
-  </text>
-  <text x="270" y="220" font-family="Arial, sans-serif" font-size="16" fill="#001F3F" font-weight="bold">
-    Conquer!
-  </text> -->
 
   <!-- Decorative Elements -->
   <g transform="translate(100,150)">
