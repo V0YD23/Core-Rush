@@ -246,18 +246,18 @@ export default function AvailableNFTs() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center">
-        <motion.h1
-  className="text-5xl md:text-6xl font-extrabold text-center mb-4 text-blue-900"
-  style={{
-    WebkitTextStroke: "2px white", // White border effect
-    WebkitTextFillColor: "#1e3a8a", // Dark blue fill
-  }}
-  initial={{ opacity: 0, y: -20, scale: 0.9 }}
-  animate={{ opacity: 1, y: 0, scale: 1 }}
-  transition={{ duration: 0.6, ease: "easeOut" }}
->
-  🎮 GAME LEVEL MARKETPLACE
-</motion.h1>
+          <motion.h1
+            className="text-5xl md:text-6xl font-extrabold text-center mb-4 text-blue-900"
+            style={{
+              WebkitTextStroke: "2px white", // White border effect
+              WebkitTextFillColor: "#1e3a8a", // Dark blue fill
+            }}
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            🎮 GAME LEVEL MARKETPLACE
+          </motion.h1>
 
           <div className="bg-gray-800 px-4 py-2 rounded-full mt-2 mb-4 flex items-center space-x-2 shadow-lg">
             <div

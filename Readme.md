@@ -1,13 +1,13 @@
 # 🎮 CORErush - A Super Stake Bros Game
 
-![CORErush Game Logo](./logos.png)
+![CORErush Game Logo](./pics/logos.png)
 
 ## 🚀 Introduction
 Welcome to **CORErush**, an exciting Mario-style game where players can stake their **CORE tokens**, predict their expected score, and win bonuses based on their performance. Test your skills, challenge yourself, and earn rewards by achieving your predicted score!
 
 ## 🏗️ Architecture
-![Architecture Diagram 1](./archi1.png)
-![Architecture Diagram 2](./archi2.png)
+![Architecture Diagram 1](./pics/archi1.png)
+![Architecture Diagram 2](./pics/archi2.png)
 
 ## 🎯 How It Works
 1. **Stake CORE Tokens**: Players must stake a certain amount of **CORE tokens** before starting the game.
@@ -16,10 +16,10 @@ Welcome to **CORErush**, an exciting Mario-style game where players can stake th
 4. **Bonus Calculation**: If the player meets or exceeds their expected score, the algorithm calculates a bonus based on their performance.
 5. **Claim Rewards**: Players can claim their winnings if they successfully achieve their target score.
 
-![Root Page Screenshot](./root_page.png)
+![Root Page Screenshot](./pics/root_page.png)
 
 ## ✨ Features
-![Game Page Screenshot](./game.png)
+![Game Page Screenshot](./pics/game.png)
 
 - **Classic Mario-style gameplay** with exciting levels and challenges.
 - **Staking mechanism** using CORE tokens for risk-based gaming.
@@ -64,7 +64,7 @@ The bonus is calculated dynamically based on:
 ## 💎 Renting Your Earned NFT  
 Once you earn an NFT by clearing a level, you have the option to **list it for rent**:  
 
-![Your NFTs Screenshot](./yourNFT.png)
+![Your NFTs Screenshot](./pics/yourNFT.png)
 
 ### How to List Your NFT for Rent  
 1. Navigate to the **Your NFTs** section in the game.  
@@ -83,7 +83,7 @@ Once you earn an NFT by clearing a level, you have the option to **list it for r
 ## 🛒 Game Level Marketplace - Buy NFTs  
 Purchase powerful game level NFTs to advance your progress in the game!  
 
-![Market Place Screenshot](./marketPlace.png)
+![Market Place Screenshot](./pics/marketPlace.png)
 
 ### How to Buy  
 1. Browse the available **Game Level NFTs** in the marketplace.  
@@ -105,7 +105,7 @@ Purchase powerful game level NFTs to advance your progress in the game!
 ## 🏆 Game Leaderboard - All-Time Rankings  
 Track the top players in the game from the day it launched until today!  
 
-![Leader Board Screenshot](./leaderBoard.png)
+![Leader Board Screenshot](./pics/leaderBoard.png)
 
 ### How the Leaderboard Works  
 - Players are ranked based on their **total CORE earnings** and **levels completed**.  
@@ -140,7 +140,7 @@ Track the top players in the game from the day it launched until today!
 
 Welcome to **Tournament Mode**, where the best players battle for glory, exclusive rewards, and a massive prize pool! This high-stakes mode is for **elite competitors** who are ready to prove their skills.
 
-![Tournament Home Page Screenshot](./tournament_home.png)
+![Tournament Home Page Screenshot](./pics/tournament_home.png)
 
 ---
 
@@ -149,7 +149,7 @@ Welcome to **Tournament Mode**, where the best players battle for glory, exclusi
 Currently, there are **three** thrilling tournament types, each designed for different playstyles.  
 **Which one will you dominate?**  
 
-![Battle Types Screenshot](./battle_types.png)
+![Battle Types Screenshot](./pics/battle_types.png)
 
 ---
 
@@ -208,7 +208,7 @@ Participation in a tournament is **not free**—it requires a **special NFT**.
 - The total **staked amount** forms the **prize pool** for the tournament.  
 - Staking **adds strategic depth**—only **serious** players join the battle!  
 
-![Staking Console Screenshot](./warrior_clash_staking_console.png)
+![Staking Console Screenshot](./pics/warrior_clash_staking_console.png)
 
 ---
 
