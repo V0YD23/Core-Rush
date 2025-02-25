@@ -1,7 +1,7 @@
 const axios = require("axios");
 const User = require("../database/models/user"); // Import User model if needed
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY; // Store API key securely
-
+const Tournament = require("../database/models/tournament_nft")
 // Function to fetch CORE price
 const getCorePrice = async (req, res) => {
   try {
@@ -28,30 +28,75 @@ const getCorePrice = async (req, res) => {
 const generateTournamentMetadata = async (req, res) => {
   try {
     const { publicKey, latest_cleared_level } = req.body;
+
     if (!publicKey || latest_cleared_level == null) {
-      return res.status(400).json({ error: "Missing publicKey or score" });
+      return res.status(400).json({ error: "Missing publicKey or latest_cleared_level" });
     }
 
-    const temp = latest_cleared_level;
-    let Type = temp < 10 ? "Ocean Warrior" : temp < 15 ? "Storm Bringer" : "Azure Legend";
+    if (latest_cleared_level < 1) {
+      return res.status(400).json({ message: "Latest level is not enough to obtain any tournament NFT" });
+    }
 
-    const metadata = {
-      name: `BattleKey NFT - Type ${Type}`,
-      description: `NFT for ${publicKey} for completing level ${temp} and becoming eligible for ${Type} Battle`,
-      attributes: [
-        { trait_type: "Level", value: temp },
-        { trait_type: "Type", value: Type },
-        { trait_type: "Owner", value: publicKey },
-      ],
-    };
+    const tournament_nft = await Tournament.findOne({ username: publicKey });
+    const metadataList = [];
+    const unlockedTournaments = [];
 
-    console.log("Generated Metadata:", metadata);
-    res.status(200).json({ metadata });
+    if (latest_cleared_level >= 1 && !tournament_nft.warrior_clash) {
+      metadataList.push({
+        name: "BattleKey NFT - Type Warrior Clash",
+        description: `NFT for ${publicKey} for completing level ${latest_cleared_level} and becoming eligible for Ocean Warrior Battle`,
+        attributes: [
+          { trait_type: "Level", value: latest_cleared_level },
+          { trait_type: "Type", value: "Warrior Clash" },
+          { trait_type: "Owner", value: publicKey },
+        ],
+      });
+      unlockedTournaments.push("Warrior Clash");
+      tournament_nft.warrior_clash = true;
+    }
+
+    if (latest_cleared_level >= 2 && !tournament_nft.arcane_master) {
+      metadataList.push({
+        name: "BattleKey NFT - Type Arcane Master",
+        description: `NFT for ${publicKey} for completing level ${latest_cleared_level} and becoming eligible for Storm Bringer Battle`,
+        attributes: [
+          { trait_type: "Level", value: latest_cleared_level },
+          { trait_type: "Type", value: "Arcane Master" },
+          { trait_type: "Owner", value: publicKey },
+        ],
+      });
+      unlockedTournaments.push("Arcane Master");
+      tournament_nft.arcane_master = true;
+    }
+
+    if (latest_cleared_level >= 3 && !tournament_nft.super_showdown) {
+      metadataList.push({
+        name: "BattleKey NFT - Type Super Showdown",
+        description: `NFT for ${publicKey} for completing level ${latest_cleared_level} and becoming eligible for Azure Legend Battle`,
+        attributes: [
+          { trait_type: "Level", value: latest_cleared_level },
+          { trait_type: "Type", value: "Super Showdown" },
+          { trait_type: "Owner", value: publicKey },
+        ],
+      });
+      unlockedTournaments.push("Super Showdown");
+      tournament_nft.super_showdown = true;
+    }
+
+    await tournament_nft.save();
+
+    console.log("Generated Metadata:", metadataList);
+    res.status(200).json({ 
+      metadata: metadataList, 
+      unlockedTournaments 
+    });
+
   } catch (error) {
     console.error("Error generating metadata:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // Function to generate game NFT metadata
 const generateMetadataNFT = async (req, res) => {

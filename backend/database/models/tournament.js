@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   staked: {type: Boolean,default:false},
 });
 
-const Ocean = mongoose.model("Ocean Warrior", userSchema);
+const Ocean = mongoose.model("Warrior Clash", userSchema);
 
 module.exports = Ocean;
 
