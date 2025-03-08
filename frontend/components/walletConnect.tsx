@@ -508,7 +508,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               >
-                {stakedBalance} ETH
+                {stakedBalance} CORE
               </motion.p>
             </div>
           </div>
@@ -549,7 +549,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
                   type="number"
                   value={stakeAmount}
                   onChange={(e) => setStakeAmount(e.target.value)}
-                  placeholder="ETH amount"
+                  placeholder="CORE amount"
                   className="flex-1 px-4 py-3 bg-purple-900 rounded-xl border-2 border-purple-900 focus:border-yellow-300 focus:ring-4 focus:ring-yellow-400/20 transition-all text-yellow-300 placeholder-yellow-200/50 font-bold"
                   min="0"
                   step="0.01"
@@ -604,7 +604,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ repeat: Infinity, duration: 1 }}
                 >
-                  {estimatedProfit.toFixed(4)} ETH
+                  {estimatedProfit.toFixed(4)} CORE
                 </motion.p>
                 <p className="text-xs text-white mt-2">
                   POWER LEVEL: {expectedScore} POINTS

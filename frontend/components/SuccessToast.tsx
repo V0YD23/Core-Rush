@@ -61,7 +61,7 @@ export const WithdrawSuccessToast = ({ amount }: { amount: string }) => (
         Victory Coins Claimed!
       </h3>
       <div className="flex items-center gap-2">
-        <span className="text-lg font-bold text-yellow-200">{amount} ETH</span>
+        <span className="text-lg font-bold text-yellow-200">{amount} CORE</span>
         <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
       </div>
     </div>

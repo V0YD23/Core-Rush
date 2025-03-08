@@ -60,7 +60,7 @@ export default function MyNFTs() {
       setIsSubmitting(true);
       toast.loading("Preparing to list your NFT...");
 
-      // Convert price to wei (assuming input is in ETH)
+      // Convert price to wei (assuming input is in CORE)
       const priceInWei = ethers.parseEther(pricePerHour.toString());
 
       // First approve the NFT for transfer
@@ -413,7 +413,7 @@ export default function MyNFTs() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Price per hour (ETH)
+                    Price per hour (CORE )
                   </label>
                   <input
                     type="number"
@@ -427,7 +427,7 @@ export default function MyNFTs() {
                     placeholder="0.1"
                   />
                   <p className="mt-1 text-xs text-gray-400">
-                    Set the hourly rate in ETH for renting this NFT
+                    Set the hourly rate in CORE for renting this NFT
                   </p>
                 </div>
               </div>

@@ -13,6 +13,7 @@ import {
   Play
 } from "lucide-react";
 import { ethers, BrowserProvider, Contract } from "ethers";
+import { useRouter } from "next/navigation";
 // import { Warrior_Clash_Logic } from "@/abi/warrior_clash_Logic";
 import { Warrior_Clash_Logic } from "@/abi/warrior_clash_logic";
 interface Player {
@@ -24,6 +25,7 @@ interface Player {
 }
 
 export default function TournamentPage() {
+  const router = useRouter();
   const api = process.env.NEXT_PUBLIC_BACKEND_API;
   const warrior_clash_Logic_contract: string =
     process.env.NEXT_PUBLIC_WARRIOR_CLASH_LOGIC_ADDRESS || "";
@@ -198,7 +200,7 @@ export default function TournamentPage() {
       );
 
       const tx = await stakingContract?.stake({
-        value: ethers.parseEther("0.1"), // Convert 0.5 ETH to Wei
+        value: ethers.parseEther("0.1"), // Convert 0.5 CORE to Wei
       });
   
       await tx.wait();
@@ -253,6 +255,7 @@ export default function TournamentPage() {
   
   const handleStartGame = async() => {
     console.log("clcicked")
+    router.push(`/tournament/Game.html?publicKey=${account}`)
   }
   const handleEndTournament = async () => {
     if (!contract) {
@@ -305,7 +308,7 @@ export default function TournamentPage() {
           Warrior Clash Tournament
         </h1>
         <p className="text-xl text-cyan-200 max-w-2xl mx-auto mb-8">
-          Stake your ETH, climb the leaderboard, and claim legendary rewards in
+          Stake your CORE, climb the leaderboard, and claim legendary rewards in
           the ultimate underwater battle
         </p>
 
@@ -418,7 +421,7 @@ export default function TournamentPage() {
             <div className="flex justify-between items-center">
               <span className="text-cyan-200">Required Stake</span>
               <span className="text-2xl font-bold text-cyan-100">
-                {stakeAmount} ETH
+                {stakeAmount} CORE
               </span>
             </div>
             <motion.button
@@ -513,7 +516,7 @@ export default function TournamentPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-xl font-bold text-yellow-400">
-                      {(player.score / 100).toFixed(2)} ETH
+                      {(player.score / 100).toFixed(2)} CORE
                     </div>
                     <div className="text-yellow-200/80 text-sm">
                       Potential Reward
@@ -574,7 +577,7 @@ export default function TournamentPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-base text-blue-300">
-                        Staked {stakeAmount} ETH
+                        Staked {stakeAmount} CORE
                       </div>
                     </div>
                   </div>

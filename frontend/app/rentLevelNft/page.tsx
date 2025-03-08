@@ -10,28 +10,17 @@ import { HiClock } from "react-icons/hi";
 import { GiMagicSwirl } from "react-icons/gi";
 import { motion } from "framer-motion";
 import { toast, Toaster } from "react-hot-toast";
-
+import { NFT_interface } from "@/interfaces/nft";
 const NFTcontractAddress: string = process.env.NEXT_PUBLIC_NFT_ADDRESS || "";
 const listNFTcontractAddress: string =
   process.env.NEXT_PUBLIC_LIST_NFT_ADDRESS || "";
 
-interface NFT {
-  tokenId: number;
-  owner: string;
-  pricePerHour: string;
-  metadata?: {
-    name: string;
-    description: string;
-    image: string;
-    attributes: any[];
-  };
-}
 
 export default function AvailableNFTs() {
-  const [availableNFTs, setAvailableNFTs] = useState<NFT[]>([]);
+  const [availableNFTs, setAvailableNFTs] = useState<NFT_interface[]>([]);
   const [loading, setLoading] = useState(true);
   const [account, setAccount] = useState<string | null>(null);
-  const [selectedNft, setSelectedNft] = useState<NFT | null>(null);
+  const [selectedNft, setSelectedNft] = useState<NFT_interface | null>(null);
   const [hoursToRent, setHoursToRent] = useState<number>(1);
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +31,7 @@ export default function AvailableNFTs() {
     loadAvailableNFTs();
   }, []);
 
-  const openRentModal = (nft: NFT) => {
+  const openRentModal = (nft: NFT_interface) => {
     setSelectedNft(nft);
     setHoursToRent(1);
     setShowModal(true);
@@ -371,7 +360,7 @@ export default function AvailableNFTs() {
                       <div className="flex items-center text-blue-300">
                         <FaEthereum className="mr-2" />
                         <span className="font-mono">
-                          {nft.pricePerHour} ETH / hour
+                          {nft.pricePerHour} CORE / hour
                         </span>
                       </div>
 
@@ -480,7 +469,7 @@ export default function AvailableNFTs() {
                   </label>
                   <div className="flex items-center space-x-2 text-lg font-mono bg-gray-700 border border-gray-600 rounded-md px-3 py-2">
                     <FaEthereum className="text-blue-400" />
-                    <span>{selectedNft.pricePerHour} ETH</span>
+                    <span>{selectedNft.pricePerHour} CORE</span>
                   </div>
                 </div>
 
@@ -506,7 +495,7 @@ export default function AvailableNFTs() {
                       {(
                         parseFloat(selectedNft.pricePerHour) * hoursToRent
                       ).toFixed(6)}{" "}
-                      ETH
+                      CORE
                     </span>
                   </div>
                   <div className="text-xs text-gray-400">

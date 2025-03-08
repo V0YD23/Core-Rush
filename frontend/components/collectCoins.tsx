@@ -38,7 +38,7 @@ const CollectCoins: React.FC<CollectCoinsProps> = ({
             type="number"
             value={gameScore}
             onChange={(e) => setGameScore(e.target.value)}
-            placeholder="Amount in ETH"
+            placeholder="Amount in CORE"
             className="flex-1 px-4 py-3 bg-rose-50 rounded-xl border-2 border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-300/20 transition-all text-rose-900 placeholder-rose-500"
             min="0"
             step="0.01"
